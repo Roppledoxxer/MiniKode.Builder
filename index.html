@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiniKode.</title>
+<style>
+  body { font-family: Courier New; }
+  canvas { border: 1px solid white; display: block; margin: 10px 0; }
+  button.minikode-btn { position: absolute; }
+canvas {
+    border: 1px solid black;
+    display: block;
+    margin: 10px 0;
+    background-color: White;
+}
+</style>
+</head>
+<body>
+
+<h1 style="color: lightblue;">MiniKode.Builder</h1>
+<p style="color: white;">1.1 BETA</p>
+
+<textarea id="minikode" rows="15" cols="80">
+<!MK>
+<BL createRect rect1 50 50 100 100 red >EL
+<BL createCircle circle1 300 100 50 blue >EL
+<BL createText text1 200 200 "Hello MiniKode!" 20 black >EL
+<BL createButton "Click Me" 50 500 "alert('Button Clicked!')" >EL
+<BL moveShape rect1 1 0 repeat >EL
+<BL startTimer 2000 "alert('Timer done!')" >EL
+</EMK>
+</textarea>
+<br>
+<button onclick="runMiniKode()">Run MiniKode</button>
+<canvas id="canvas" width="600" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let shapes = {};
+let timers = [];
+
+function runMiniKode() {
+    // Clear canvas, timers, buttons
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    shapes = {};
+    timers.forEach(t => clearTimeout(t));
+    timers = [];
+    document.querySelectorAll('button.minikode-btn').forEach(b => b.remove());
+
+    const code = document.getElementById('minikode').value;
+    const mkCode = code.match(/<!MK>([\s\S]*?)<\/EMK>/);
+    if(!mkCode) { alert("No MiniKode code found"); return; }
+
+    const lines = mkCode[1].split(/>EL/).map(l => l.trim()).filter(l => l);
+    lines.forEach(line => executeLine(line));
+    drawShapes();
+}
+
+function executeLine(line) {
+    const match = line.match(/<BL\s+(\w+)\s+(.*)/);
+    if(!match) return;
+
+    const cmd = match[1];
+    let argsStr = match[2].trim();
+
+    // Parse arguments (support quoted strings)
+    let args = [];
+    argsStr.replace(/"([^"]+)"|(\S+)/g, (_, quoted, plain) => {
+        args.push(quoted || plain);
+        return "";
+    });
+
+    switch(cmd) {
+        case "createRect":
+            // createRect id x y w h color
+            const [rid, x, y, w, h, color] = args;
+            shapes[rid] = {type:"rect", x:+x, y:+y, w:+w, h:+h, color};
+            break;
+
+        case "createCircle":
+            // createCircle id x y r color
+            const [cid, cx, cy, r, ccolor] = args;
+            shapes[cid] = {type:"circle", x:+cx, y:+cy, r:+r, color: ccolor};
+            break;
+
+        case "createText":
+            // createText id x y "text" size color
+            const [tid, tx, ty, text, size, tcolor] = args;
+            shapes[tid] = {type:"text", x:+tx, y:+ty, text, size:+size, color:tcolor};
+            break;
+
+        case "moveShape":
+            // moveShape id dx dy [repeat|once]
+            const [mid, dx, dy, mode] = args;
+            if(!shapes[mid]) return;
+            const moveFunc = () => {
+                shapes[mid].x += +dx;
+                shapes[mid].y += +dy;
+                drawShapes();
+                if(mode==="repeat") requestAnimationFrame(moveFunc);
+            };
+            moveFunc();
+            break;
+
+        case "startTimer":
+            // startTimer ms "action"
+            const [ms, action] = args;
+            const timer = setTimeout(() => eval(action), +ms);
+            timers.push(timer);
+            break;
+
+        case "createButton":
+            // createButton "label" x y "action"
+            const [label, bx, by, baction] = args;
+            const btn = document.createElement('button');
+            btn.classList.add('minikode-btn');
+            btn.style.left = bx+"px";
+            btn.style.top = by+"px";
+            btn.innerText = label;
+            btn.onclick = () => eval(baction);
+            document.body.appendChild(btn);
+            break;
+
+        default:
+            console.log("Unknown command:", cmd);
+    }
+}
+
+function drawShapes() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(const key in shapes) {
+        const s = shapes[key];
+        if(s.type==="rect") {
+            ctx.fillStyle = s.color;
+            ctx.fillRect(s.x, s.y, s.w, s.h);
+        } else if(s.type==="circle") {
+            ctx.fillStyle = s.color;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+            ctx.fill();
+        } else if(s.type==="text") {
+            ctx.fillStyle = s.color;
+            ctx.font = s.size+"px Arial";
+            ctx.fillText(s.text, s.x, s.y);
+        }
+    }
+}
+</script>
+<script>
+// ======== Enhanced MiniKode Functions ========
+
+// Store animation frame IDs for moving shapes
+let shapeAnimations = {};
+
+// Built-in MiniKode Functions
+
+// Move a shape continuously
+function moveShape(id, dx, dy, repeat = false) {
+    if(!shapes[id]) return;
+
+    function move() {
+        shapes[id].x += +dx;
+        shapes[id].y += +dy;
+        drawShapes();
+        if(repeat) shapeAnimations[id] = requestAnimationFrame(move);
+    }
+
+    // Start movement
+    move();
+
+    // Save animation ID for stopping
+    if(!repeat) shapeAnimations[id] = null;
+}
+
+// Stop a moving shape
+function stopShape(id) {
+    if(shapeAnimations[id]) {
+        cancelAnimationFrame(shapeAnimations[id]);
+        shapeAnimations[id] = null;
+    }
+}
+
+// Timer with optional silent mode
+function startTimer(ms, action = null) {
+    if(action) {
+        const timer = setTimeout(() => eval(action), +ms);
+        timers.push(timer);
+        return timer;
+    } else {
+        // silent timer, just removes itself after ms
+        const timer = setTimeout(() => {}, +ms);
+        timers.push(timer);
+        return timer;
+    }
+}
+
+// ======== MiniKode Helper Functions ========
+
+function minikodeMove(args) {
+    // args = [id, dx, dy, mode]
+    const [id, dx, dy, mode] = args;
+    moveShape(id, dx, dy, mode === 'repeat');
+}
+
+function minikodeStop(args) {
+    // args = [id]
+    stopShape(args[0]);
+}
+
+function minikodeTimer(args) {
+    // args = [ms, action?]
+    const [ms, action] = args;
+    startTimer(ms, action);
+}
+
+// ======== Updated executeLine to use new functions ========
+
+function executeLine(line) {
+    const match = line.match(/<BL\s+(\w+)\s+(.*)/);
+    if(!match) return;
+
+    const cmd = match[1];
+    let argsStr = match[2].trim();
+
+    // Parse arguments (support quoted strings)
+    let args = [];
+    argsStr.replace(/"([^"]+)"|(\S+)/g, (_, quoted, plain) => {
+        args.push(quoted || plain);
+        return "";
+    });
+
+    switch(cmd) {
+        case "createRect":
+            const [rid, x, y, w, h, color] = args;
+            shapes[rid] = {type:"rect", x:+x, y:+y, w:+w, h:+h, color};
+            break;
+        case "createCircle":
+            const [cid, cx, cy, r, ccolor] = args;
+            shapes[cid] = {type:"circle", x:+cx, y:+cy, r:+r, color: ccolor};
+            break;
+        case "createText":
+            const [tid, tx, ty, text, size, tcolor] = args;
+            shapes[tid] = {type:"text", x:+tx, y:+ty, text, size:+size, color:tcolor};
+            break;
+        case "moveShape":
+            minikodeMove(args);
+            break;
+        case "stopShape":
+            minikodeStop(args);
+            break;
+        case "startTimer":
+            minikodeTimer(args);
+            break;
+        case "createButton":
+            const [label, bx, by, baction] = args;
+            const btn = document.createElement('button');
+            btn.classList.add('minikode-btn');
+            btn.style.left = bx+"px";
+            btn.style.top = by+"px";
+            btn.innerText = label;
+            btn.onclick = () => {
+                // parse action using MiniKode commands if possible
+                if(baction.startsWith("move") || baction.startsWith("stop") || baction.startsWith("startTimer")) {
+                    const parts = baction.split(" ");
+                    const command = parts.shift();
+                    executeLine(`<BL ${command} ${parts.join(" ")}>`);
+                } else {
+                    eval(baction);
+                }
+            };
+            document.body.appendChild(btn);
+            break;
+        default:
+            console.log("Unknown command:", cmd);
+    }
+    drawShapes();
+}
+function runMiniKode() {
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Stop all moving shapes
+    for (let id in shapeAnimations) {
+        if (shapeAnimations[id]) cancelAnimationFrame(shapeAnimations[id]);
+    }
+    shapeAnimations = {};
+
+    // Clear timers
+    timers.forEach(timer => clearTimeout(timer));
+    timers = [];
+
+    // Remove old buttons
+    document.querySelectorAll('button.minikode-btn').forEach(b => b.remove());
+
+    // Reset shapes
+    shapes = {};
+
+    // Get MiniKode code
+    const code = document.getElementById('minikode').value;
+    const mkCode = code.match(/<!MK>([\s\S]*?)<\/EMK>/);
+    if (!mkCode) { alert("No MiniKode code found"); return; }
+
+    const lines = mkCode[1].split(/>EL/).map(l => l.trim()).filter(l => l);
+    lines.forEach(line => executeLine(line));
+
+    drawShapes();
+}
+
+// ======== End of Enhanced Functions ========
+// ======= MiniKode Help Button & Overlay =======
+
+// Create the help button
+const h1 = document.querySelector('h1');
+const helpBtn = document.createElement('button');
+helpBtn.innerText = "Help";
+helpBtn.style.marginLeft = "20px";
+helpBtn.style.padding = "5px 10px";
+helpBtn.style.fontSize = "16px";
+helpBtn.style.cursor = "pointer";
+h1.appendChild(helpBtn);
+
+// Create overlay container
+const helpOverlay = document.createElement('div');
+helpOverlay.style.position = "fixed";
+helpOverlay.style.top = "0";
+helpOverlay.style.left = "0";
+helpOverlay.style.width = "100%";
+helpOverlay.style.height = "100%";
+helpOverlay.style.backgroundColor = "rgba(0,0,0,0.8)";
+helpOverlay.style.color = "#fff";
+helpOverlay.style.display = "none";
+helpOverlay.style.zIndex = "1000";
+helpOverlay.style.overflowY = "scroll";
+helpOverlay.style.padding = "20px";
+helpOverlay.style.boxSizing = "border-box";
+
+// Add close button inside overlay
+const closeBtn = document.createElement('button');
+closeBtn.innerText = "Close";
+closeBtn.style.padding = "5px 10px";
+closeBtn.style.fontSize = "16px";
+closeBtn.style.cursor = "pointer";
+closeBtn.style.marginBottom = "20px";
+helpOverlay.appendChild(closeBtn);
+
+// Help content
+const helpContent = document.createElement('div');
+helpContent.innerHTML = `
+<h2>MiniKode Help</h2>
+<p>MiniKode syntax uses <code>&lt;BL command args &gt;EL</code> blocks inside <code>&lt;!MK&gt;</code> ... <code>&lt;/EMK&gt;</code></p>
+<h3>Shape Commands</h3>
+<ul>
+<li><b>createRect</b> id x y width height color</li>
+<li><b>createCircle</b> id x y radius color</li>
+<li><b>createText</b> id x y "text" size color</li>
+</ul>
+<h3>Movement Commands</h3>
+<ul>
+<li><b>moveShape</b> id dx dy repeat|once</li>
+<li><b>stopShape</b> id</li>
+</ul>
+<h3>Timer</h3>
+<ul>
+<li><b>startTimer</b> milliseconds "optionalAction"</li>
+</ul>
+<h3>Buttons</h3>
+<ul>
+<li><b>createButton</b> "Label" x y "action"</li>
+<li>Actions can be MiniKode commands (moveShape, stopShape, startTimer) or JS code (alert, etc.)</li>
+</ul>
+<h3>Example:</h3>
+<pre>
+&lt;!MK&gt;
+&lt;BL createRect rect1 50 50 100 100 red &gt;EL
+&lt;BL moveShape rect1 5 0 repeat &gt;EL
+&lt;BL startTimer 1000 "stopShape rect1" &gt;EL
+&lt;/EMK&gt;
+</pre>
+`;
+helpOverlay.appendChild(helpContent);
+document.body.appendChild(helpOverlay);
+
+// Event listeners
+helpBtn.onclick = () => helpOverlay.style.display = "block";
+closeBtn.onclick = () => helpOverlay.style.display = "none";
+
+</script>
+</body>
+</html>
+
+
