@@ -1,395 +1,1200 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/jpeg" href="IMG_0772.jpeg">
-  <link rel="apple-touch-icon" type="image/jpeg" href="IMG_0772.jpeg">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MiniKode.</title>
-<style>
-  body { font-family: Courier New; }
-  canvas { border: 1px solid white; display: block; margin: 10px 0; }
-  button.minikode-btn { position: absolute; }
-canvas {
-    border: 1px solid black;
-    display: block;
-    margin: 10px 0;
-    background-color: White;
-}
-</style>
+  <meta charset="utf-8"/>
+  <title>MiniKode.Builder — Code</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #071026;
+      --panel: #0b1227;
+      --muted: #94a3b8;
+      --accent: #6ee7b7;
+      --error: #ff6b6b;
+      --success: #51cf66;
+      --warning: #ffd43b;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Fira Code', 'Monaco', 'Menlo', monospace;
+      background: linear-gradient(180deg, #071026 0%, #071b2b 100%);
+      color: #e6eef6;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .header {
+      padding: 14px 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h2 {
+      margin: 0;
+      color: var(--accent);
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .header-info {
+      display: flex;
+      gap: 20px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .header-stat {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .stat-value {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .wrap {
+      display: flex;
+      gap: 12px;
+      padding: 14px;
+      flex: 1;
+      overflow: hidden;
+    }
+    .panel {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .editor-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .editor-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    textarea {
+      width: 100%;
+      flex: 1;
+      background: transparent;
+      color: #c8d6e5;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 12px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 12px;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+      min-height: 0;
+      white-space: pre;
+    }
+    textarea:focus {
+      border-color: rgba(110, 231, 183, 0.3);
+      box-shadow: 0 0 0 2px rgba(110, 231, 183, 0.1);
+    }
+    .controls-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 6px;
+    }
+    button {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid rgba(110, 231, 183, 0.3);
+      background: linear-gradient(135deg, rgba(110, 231, 183, 0.1), rgba(110, 231, 183, 0.05));
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 11px;
+      font-family: inherit;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    button:hover {
+      background: linear-gradient(135deg, rgba(110, 231, 183, 0.2), rgba(110, 231, 183, 0.1));
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(110, 231, 183, 0.15);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    button.danger {
+      border-color: rgba(255, 107, 107, 0.3);
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05));
+      color: var(--error);
+    }
+    button.danger:hover {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 107, 107, 0.1));
+      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15);
+    }
+    .right-panel {
+      width: 700px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .preview-container {
+      background: white;
+      border-radius: 10px;
+      flex: 1;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    }
+    .preview-header {
+      padding: 10px 14px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #495057;
+    }
+    .preview-content {
+      width: 100%;
+      flex: 1;
+      overflow: auto;
+      padding: 0;
+      position: relative; /* ensure absolute-position children have a reference */
+      min-height: 240px;   /* ensure visible area by default */
+      background: #ffffff;
+    }
+    .console-panel {
+      font-family: inherit;
+      background: linear-gradient(180deg, #051526 0%, #081a2a 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 12px;
+      border-radius: 8px;
+      height: 160px;
+      overflow-y: auto;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .console-entry {
+      margin-bottom: 6px;
+      padding: 4px 0 4px 6px;
+      border-left: 2px solid transparent;
+    }
+    .console-entry.info {
+      color: #94a3b8;
+      border-left-color: #4b5563;
+    }
+    .console-entry.ok {
+      color: #51cf66;
+      border-left-color: #37b24d;
+    }
+    .console-entry.err {
+      color: #ff8787;
+      border-left-color: #f03e3e;
+    }
+    .code-hint {
+      background: rgba(255, 255, 255, 0.02);
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 8px;
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+      border-left: 2px solid var(--accent);
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .code-hint code {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: #6ee7b7;
+      font-size: 9px;
+    }
+    .templates-bar {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .template-btn {
+      padding: 6px 10px;
+      font-size: 10px;
+      background: rgba(110, 231, 183, 0.08);
+      border: 1px solid rgba(110, 231, 183, 0.2);
+      color: var(--accent);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
+      min-width: 90px;
+    }
+    .template-btn:hover {
+      background: rgba(110, 231, 183, 0.15);
+      border-color: rgba(110, 231, 183, 0.4);
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(110, 231, 183, 0.3);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(110, 231, 183, 0.5);
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <div class="header">
+      <h2>🎨 MiniKode.Builder — MiniKode Lang (v1.1 minor bug fixes)</h2>
+      <div class="header-info">
+        <div class="header-stat">
+          <span>Lines:</span>
+          <span class="stat-value" id="lineCount">0</span>
+        </div>
+        <div class="header-stat">
+          <span>Chars:</span>
+          <span class="stat-value" id="charCount">0</span>
+        </div>
+        <div class="header-stat">
+          <span>Commands:</span>
+          <span class="stat-value" id="commandCount">0</span>
+        </div>
+      </div>
+    </div>
 
-<h1 style="color: lightblue;">MiniKode.Builder</h1>
-<p style="color: white;">1.1 BETA</p>
+    <div class="wrap">
+      <!-- LEFT PANEL: EDITOR -->
+      <div class="panel editor-panel">
+        <div class="panel-title">📝 MiniKode Editor</div>
+        <div class="editor-wrapper">
+          <textarea id="editor" spellcheck="false" placeholder="Write pure MiniKode code here..."></textarea>
+        </div>
 
-<textarea id="minikode" rows="15" cols="80">
-<!MK>
-<BL createRect rect1 50 50 100 100 red >EL
-<BL createCircle circle1 300 100 50 blue >EL
-<BL createText text1 200 200 "Hello MiniKode!" 20 black >EL
-<BL createButton "Click Me" 50 500 "alert('Button Clicked!')" >EL
-<BL moveShape rect1 1 0 repeat >EL
-<BL startTimer 2000 "alert('Timer done!')" >EL
-</EMK>
-</textarea>
-<br>
-<button onclick="runMiniKode()">Run MiniKode</button>
-<canvas id="canvas" width="600" height="400"></canvas>
+        <div class="controls-bar">
+          <button id="runBtn">▶ Run Code</button>
+          <button id="clearBtn" class="danger">🗑 Clear All</button>
+          <button id="formatBtn">✨ Format</button>
+          <div style="flex: 1;"></div>
+          <span style="font-size: 10px; color: var(--muted);">Ctrl+Enter to run</span>
+        </div>
 
-<script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-let shapes = {};
-let timers = [];
+        <!-- Templates -->
+        <div style="margin-top: 8px;">
+          <div class="panel-title" style="margin-top: 0; margin-bottom: 6px;">⚡ Quick Templates</div>
+          <div class="templates-bar">
+            <button class="template-btn" onclick="loadTemplate('counter')">Counter</button>
+            <button class="template-btn" onclick="loadTemplate('todo')">Todo</button>
+            <button class="template-btn" onclick="loadTemplate('grid')">Grid</button>
+            <button class="template-btn" onclick="loadTemplate('form')">Form</button>
+            <button class="template-btn" onclick="loadTemplate('cards')">Cards</button>
+            <button class="template-btn" onclick="loadTemplate('physics')">Physics</button>
+          </div>
+        </div>
 
-function runMiniKode() {
-    // Clear canvas, timers, buttons
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    shapes = {};
-    timers.forEach(t => clearTimeout(t));
-    timers = [];
-    document.querySelectorAll('button.minikode-btn').forEach(b => b.remove());
+        <div class="code-hint" id="hint"></div>
+      </div>
 
-    const code = document.getElementById('minikode').value;
-    const mkCode = code.match(/<!MK>([\s\S]*?)<\/EMK>/);
-    if(!mkCode) { alert("No MiniKode code found"); return; }
+      <!-- RIGHT PANEL: PREVIEW & CONSOLE -->
+      <div class="right-panel">
+        <!-- PREVIEW -->
+        <div class="preview-container">
+          <div class="preview-header">
+            👁️ Live Preview
+          </div>
+          <div class="preview-content" id="preview-content"></div>
+        </div>
 
-    const lines = mkCode[1].split(/>EL/).map(l => l.trim()).filter(l => l);
-    lines.forEach(line => executeLine(line));
-    drawShapes();
-}
+        <!-- CONSOLE -->
+        <div class="panel console-panel" id="console" role="log" tabindex="0"></div>
+      </div>
+    </div>
+  </div>
 
-function executeLine(line) {
-    const match = line.match(/<BL\s+(\w+)\s+(.*)/);
-    if(!match) return;
+  <script>
+    /**
+     * Fixed visibility behavior:
+     * - Unknown colon-style tokens become STYLE or ATTR instead of "unknown"
+     * - After creating an element we ensure it's visible (display, min-size)
+     * - Physics objects are registered on next animation frame to get correct size
+     */
 
-    const cmd = match[1];
-    let argsStr = match[2].trim();
+    const editor = document.getElementById('editor');
+    const consoleEl = document.getElementById('console');
+    const previewContent = document.getElementById('preview-content');
+    const runBtn = document.getElementById('runBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const formatBtn = document.getElementById('formatBtn');
+    const hintBox = document.getElementById('hint');
+    const lineCount = document.getElementById('lineCount');
+    const charCount = document.getElementById('charCount');
+    const commandCount = document.getElementById('commandCount');
 
-    // Parse arguments (support quoted strings)
-    let args = [];
-    argsStr.replace(/"([^"]+)"|(\S+)/g, (_, quoted, plain) => {
-        args.push(quoted || plain);
-        return "";
-    });
+    const runtime = {
+      elements: new Map(),
+      variables: new Map(),
+      state: new Map(),
+      events: [],
+      timers: [],
+      validators: new Map(),
+      physics: new Map(),
+      commandCount: 0,
+      errors: 0
+    };
 
-    switch(cmd) {
-        case "createRect":
-            // createRect id x y w h color
-            const [rid, x, y, w, h, color] = args;
-            shapes[rid] = {type:"rect", x:+x, y:+y, w:+w, h:+h, color};
-            break;
+    const physicsEngine = {
+      gravity: 0.6,
+      friction: 0.98,
+      objects: new Map(),
+      isRunning: false,
+      addObject: function(el, config = {}) {
+        const obj = {
+          element: el,
+          x: parseFloat(el.style.left) || el.offsetLeft || 0,
+          y: parseFloat(el.style.top) || el.offsetTop || 0,
+          vx: config.vx || 0,
+          vy: config.vy || 0,
+          ax: config.ax || 0,
+          ay: config.ay !== undefined ? config.ay : this.gravity,
+          mass: config.mass || 1,
+          friction: config.friction !== undefined ? config.friction : 0.98,
+          bounce: config.bounce || 0.7,
+          static: config.static || false,
+          drag: config.drag || false,
+          width: el.offsetWidth || parseFloat(getComputedStyle(el).width) || 1,
+          height: el.offsetHeight || parseFloat(getComputedStyle(el).height) || 1
+        };
+        this.objects.set(el.id || el, obj);
+        el.style.position = 'absolute';
+        return obj;
+      },
+      update: function() {
+        const container = previewContent;
+        const containerWidth = Math.max(1, container.clientWidth);
+        const containerHeight = Math.max(1, container.clientHeight);
 
-        case "createCircle":
-            // createCircle id x y r color
-            const [cid, cx, cy, r, ccolor] = args;
-            shapes[cid] = {type:"circle", x:+cx, y:+cy, r:+r, color: ccolor};
-            break;
+        this.objects.forEach((obj, key) => {
+          if (obj.static) return;
 
-        case "createText":
-            // createText id x y "text" size color
-            const [tid, tx, ty, text, size, tcolor] = args;
-            shapes[tid] = {type:"text", x:+tx, y:+ty, text, size:+size, color:tcolor};
-            break;
+          obj.vx += obj.ax;
+          obj.vy += obj.ay;
 
-        case "moveShape":
-            // moveShape id dx dy [repeat|once]
-            const [mid, dx, dy, mode] = args;
-            if(!shapes[mid]) return;
-            const moveFunc = () => {
-                shapes[mid].x += +dx;
-                shapes[mid].y += +dy;
-                drawShapes();
-                if(mode==="repeat") requestAnimationFrame(moveFunc);
-            };
-            moveFunc();
-            break;
+          obj.vx *= obj.friction;
+          obj.vy *= obj.friction;
 
-        case "startTimer":
-            // startTimer ms "action"
-            const [ms, action] = args;
-            const timer = setTimeout(() => eval(action), +ms);
-            timers.push(timer);
-            break;
+          obj.x += obj.vx;
+          obj.y += obj.vy;
 
-        case "createButton":
-            // createButton "label" x y "action"
-            const [label, bx, by, baction] = args;
-            const btn = document.createElement('button');
-            btn.classList.add('minikode-btn');
-            btn.style.left = bx+"px";
-            btn.style.top = by+"px";
-            btn.innerText = label;
-            btn.onclick = () => eval(baction);
-            document.body.appendChild(btn);
-            break;
+          // Boundary collision
+          if (obj.x < 0) {
+            obj.x = 0;
+            obj.vx *= -obj.bounce;
+          }
+          if (obj.x + obj.width > containerWidth) {
+            obj.x = containerWidth - obj.width;
+            obj.vx *= -obj.bounce;
+          }
+          if (obj.y < 0) {
+            obj.y = 0;
+            obj.vy *= -obj.bounce;
+          }
+          if (obj.y + obj.height > containerHeight) {
+            obj.y = containerHeight - obj.height;
+            obj.vy *= -obj.bounce;
+          }
 
-        default:
-            console.log("Unknown command:", cmd);
-    }
-}
-
-function drawShapes() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    for(const key in shapes) {
-        const s = shapes[key];
-        if(s.type==="rect") {
-            ctx.fillStyle = s.color;
-            ctx.fillRect(s.x, s.y, s.w, s.h);
-        } else if(s.type==="circle") {
-            ctx.fillStyle = s.color;
-            ctx.beginPath();
-            ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-            ctx.fill();
-        } else if(s.type==="text") {
-            ctx.fillStyle = s.color;
-            ctx.font = s.size+"px Arial";
-            ctx.fillText(s.text, s.x, s.y);
+          obj.element.style.left = obj.x + 'px';
+          obj.element.style.top = obj.y + 'px';
+        });
+      },
+      start: function() {
+        if (this.isRunning) return;
+        this.isRunning = true;
+        const self = this;
+        function loop() {
+          if (!self.isRunning) return;
+          self.update();
+          requestAnimationFrame(loop);
         }
+        requestAnimationFrame(loop);
+      },
+      stop: function() {
+        this.isRunning = false;
+      },
+      applyVelocity: function(el, vx, vy) {
+        const obj = this.objects.get(el.id || el);
+        if (obj) {
+          obj.vx = vx;
+          obj.vy = vy;
+        }
+      },
+      applyForce: function(el, fx, fy) {
+        const obj = this.objects.get(el.id || el);
+        if (obj) {
+          obj.vx += fx / obj.mass;
+          obj.vy += fy / obj.mass;
+        }
+      }
+    };
+
+    // ---- Templates (same as before) ----
+    const templates = {
+      counter: `<BMK>
+<!-- Simple Counter with Increment/Decrement -->
+<BL CREATE div#app @[#preview-content] , [100%x100%] , STYLE+padding:40px;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif EL>
+
+<BL CREATE div#card @[#app] , [] , STYLE+background:white;border-radius:24px;padding:60px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;min-width:350px EL>
+
+<BL CREATE h1#title @[#card] , [] , TEXT+Counter App; STYLE+margin:0 0 10px 0;color:#333;font-size:36px;font-weight:800 EL>
+
+<BL CREATE p#subtitle @[#card] , [] , TEXT+Pure MiniKode; STYLE+margin:0 0 40px 0;color:#999;font-size:12px EL>
+
+<!-- Counter Display -->
+<BL CREATE div#display @[#card] , [] , TEXT+0; STYLE+font-size:120px;font-weight:900;color:#667eea;margin:30px 0;font-variant-numeric:tabular-nums EL>
+
+<!-- Buttons -->
+<BL CREATE div#buttons @[#card] , [] , STYLE+display:flex;gap:16px;justify-content:center;margin-top:40px EL>
+
+<BL CREATE button#decBtn @[#buttons] , [] , TEXT+−; STYLE+width:80px;height:80px;font-size:40px;border-radius:50%;border:none;background:#ff6b6b;color:white;cursor:pointer;font-weight:bold;transition:all 0.2s; ONCLICK+decrementCounter() EL>
+
+<BL CREATE button#resetBtn @[#buttons] , [] , TEXT+↻; STYLE+width:80px;height:80px;font-size:28px;border-radius:50%;border:none;background:#adb5bd;color:white;cursor:pointer;font-weight:bold;transition:all 0.2s; ONCLICK+resetCounter() EL>
+
+<BL CREATE button#incBtn @[#buttons] , [] , TEXT++; STYLE+width:80px;height:80px;font-size:40px;border-radius:50%;border:none;background:#51cf66;color:white;cursor:pointer;font-weight:bold;transition:all 0.2s; ONCLICK+incrementCounter() EL>
+
+<!-- Status -->
+<BL CREATE p#status @[#card] , [] , TEXT+Click to count; STYLE+margin:30px 0 0 0;color:#999;font-size:12px;min-height:20px EL>
+
+<EMK>`,
+      todo: `<BMK>
+<!-- Todo List with Add/Remove -->
+<BL CREATE div#app @[#preview-content] , [100%x100%] , STYLE+padding:20px;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;font-family:system-ui,sans-serif EL>
+
+<BL CREATE div#container @[#app] , [] , STYLE+max-width:600px;margin:0 auto;background:white;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.2);overflow:hidden EL>
+
+<BL CREATE div#header @[#container] , [] , STYLE+background:linear-gradient(135deg,#667eea,#764ba2);padding:30px;color:white EL>
+
+<BL CREATE h1#title @[#header] , [] , TEXT+📝 Todo List; STYLE+margin:0 0 6px 0;font-size:28px;font-weight:800 EL>
+
+<BL CREATE p#subtitle @[#header] , [] , TEXT+Pure MiniKode Tasks; STYLE+margin:0;opacity:0.9;font-size:12px EL>
+
+<BL CREATE div#content @[#container] , [] , STYLE+padding:20px EL>
+
+<BL CREATE div#input-area @[#content] , [] , STYLE+display:flex;gap:8px;margin-bottom:20px EL>
+
+<BL CREATE input#task-input @[#input-area] , [] , ATTR+type=text; ATTR+placeholder=Add a new task...; STYLE+flex:1;padding:10px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none EL>
+
+<BL CREATE button#add-task @[#input-area] , [] , TEXT+Add; STYLE+padding:10px 20px;background:#667eea;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700; ONCLICK+addTodoItem() EL>
+
+<BL CREATE div#tasks-list @[#content] , [] , STYLE+display:flex;flex-direction:column;gap:8px EL>
+
+<BL CREATE div#empty-state @[#content] , [] , TEXT+✨ No tasks yet; STYLE+text-align:center;padding:40px 20px;color:#bbb;font-size:14px EL>
+
+<EMK>`,
+      grid: `<BMK>
+<!-- Responsive Grid Layout -->
+<BL CREATE div#app @[#preview-content] , [100%x100%] , STYLE+padding:30px 20px;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;font-family:system-ui,sans-serif EL>
+
+<BL CREATE h1#title @[#app] , [] , TEXT+Grid Layout; STYLE+text-align:center;color:white;margin:0 0 40px 0;font-size:32px;font-weight:800 EL>
+
+<BL CREATE div#grid @[#app] , [] , STYLE+display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;max-width:1200px;margin:0 auto EL>
+
+<!-- Grid Item 1 -->
+<BL CREATE div#card1 @[#grid] , [] , STYLE+background:white;border-radius:12px;padding:30px;box-shadow:0 4px 15px rgba(0,0,0,0.1);text-align:center EL>
+<BL CREATE h3#card1-title @[#card1] , [] , TEXT+📱 Mobile; STYLE+margin:0 0 10px 0;color:#333;font-size:18px EL>
+<BL CREATE p#card1-desc @[#card1] , [] , TEXT+Responsive design; STYLE+margin:0;color:#666;font-size:12px EL>
+
+<!-- Grid Item 2 -->
+<BL CREATE div#card2 @[#grid] , [] , STYLE+background:white;border-radius:12px;padding:30px;box-shadow:0 4px 15px rgba(0,0,0,0.1);text-align:center EL>
+<BL CREATE h3#card2-title @[#card2] , [] , TEXT+🎨 Design; STYLE+margin:0 0 10px 0;color:#333;font-size:18px EL>
+<BL CREATE p#card2-desc @[#card2] , [] , TEXT+Beautiful layouts; STYLE+margin:0;color:#666;font-size:12px EL>
+
+<!-- Grid Item 3 -->
+<BL CREATE div#card3 @[#grid] , [] , STYLE+background:white;border-radius:12px;padding:30px;box-shadow:0 4px 15px rgba(0,0,0,0.1);text-align:center EL>
+<BL CREATE h3#card3-title @[#card3] , [] , TEXT+⚡ Fast; STYLE+margin:0 0 10px 0;color:#333;font-size:18px EL>
+<BL CREATE p#card3-desc @[#card3] , [] , TEXT+Lightning quick; STYLE+margin:0;color:#666;font-size:12px EL>
+
+<!-- Grid Item 4 -->
+<BL CREATE div#card4 @[#grid] , [] , STYLE+background:white;border-radius:12px;padding:30px;box-shadow:0 4px 15px rgba(0,0,0,0.1);text-align:center EL>
+<BL CREATE h3#card4-title @[#card4] , [] , TEXT+🔒 Secure; STYLE+margin:0 0 10px 0;color:#333;font-size:18px EL>
+<BL CREATE p#card4-desc @[#card4] , [] , TEXT+Always protected; STYLE+margin:0;color:#666;font-size:12px EL>
+
+<EMK>`,
+      form: `<BMK>
+<!-- Contact Form -->
+<BL CREATE div#app @[#preview-content] , [100%x100%] , STYLE+padding:40px 20px;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif EL>
+
+<BL CREATE div#form-container @[#app] , [] , STYLE+background:white;border-radius:16px;padding:40px;box-shadow:0 20px 60px rgba(0,0,0,0.2);max-width:500px;width:100% EL>
+
+<BL CREATE h1#form-title @[#form-container] , [] , TEXT+Contact Form; STYLE+margin:0 0 8px 0;color:#333;font-size:28px;font-weight:800 EL>
+
+<BL CREATE p#form-desc @[#form-container] , [] , TEXT+Pure MiniKode Form; STYLE+margin:0 0 30px 0;color:#999;font-size:12px EL>
+
+<BL CREATE div#form-group @[#form-container] , [] , STYLE+display:flex;flex-direction:column;gap:16px EL>
+
+<BL CREATE input#name @[#form-group] , [] , ATTR+type=text; ATTR+placeholder=Full Name; STYLE+padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none EL>
+
+<BL CREATE input#email @[#form-group] , [] , ATTR+type=email; ATTR+placeholder=Email Address; STYLE+padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none EL>
+
+<BL CREATE textarea#message @[#form-group] , [] , ATTR+placeholder=Your Message; STYLE+padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none;min-height:120px;resize:none EL>
+
+<BL CREATE button#submit @[#form-group] , [] , TEXT+Send Message; STYLE+padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;font-family:inherit;transition:all 0.2s; ONCLICK+submitForm() EL>
+
+<BL CREATE div#form-status @[#form-container] , [] , TEXT+; STYLE+margin-top:20px;padding:12px;border-radius:8px;text-align:center;font-size:12px;display:none EL>
+
+<EMK>`,
+      cards: `<BMK>
+<!-- Card Layout -->
+<BL CREATE div#app @[#preview-content] , [100%x100%] , STYLE+padding:30px 20px;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;font-family:system-ui,sans-serif EL>
+
+<BL CREATE div#container @[#app] , [] , STYLE+max-width:1200px;margin:0 auto EL>
+
+<BL CREATE h1#title @[#container] , [] , TEXT+Card Collection; STYLE+text-align:center;color:white;margin:0 0 40px 0;font-size:32px;font-weight:800 EL>
+
+<BL CREATE div#cards-grid @[#container] , [] , STYLE+display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px EL>
+
+<!-- Card 1 -->
+<BL CREATE div#card1 @[#cards-grid] , [] , STYLE+background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.12);transition:transform 0.3s;cursor:pointer EL>
+<BL CREATE div#card1-image @[#card1] , [] , STYLE+height:200px;background:linear-gradient(135deg,#667eea,#764ba2) EL>
+<BL CREATE div#card1-content @[#card1] , [] , STYLE+padding:24px EL>
+<BL CREATE h3#card1-title @[#card1-content] , [] , TEXT+Feature One; STYLE+margin:0 0 10px 0;color:#333;font-size:18px;font-weight:700 EL>
+<BL CREATE p#card1-desc @[#card1-content] , [] , TEXT+Amazing feature; STYLE+margin:0;color:#666;font-size:13px EL>
+
+<!-- Card 2 -->
+<BL CREATE div#card2 @[#cards-grid] , [] , STYLE+background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.12);transition:transform 0.3s;cursor:pointer EL>
+<BL CREATE div#card2-image @[#card2] , [] , STYLE+height:200px;background:linear-gradient(135deg,#f093fb,#f5576c) EL>
+<BL CREATE div#card2-content @[#card2] , [] , STYLE+padding:24px EL>
+<BL CREATE h3#card2-title @[#card2-content] , [] , TEXT+Feature Two; STYLE+margin:0 0 10px 0;color:#333;font-size:18px;font-weight:700 EL>
+<BL CREATE p#card2-desc @[#card2-content] , [] , TEXT+Incredible design; STYLE+margin:0;color:#666;font-size:13px EL>
+
+<!-- Card 3 -->
+<BL CREATE div#card3 @[#cards-grid] , [] , STYLE+background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.12);transition:transform 0.3s;cursor:pointer EL>
+<BL CREATE div#card3-image @[#card3] , [] , STYLE+height:200px;background:linear-gradient(135deg,#4facfe,#00f2fe) EL>
+<BL CREATE div#card3-content @[#card3] , [] , STYLE+padding:24px EL>
+<BL CREATE h3#card3-title @[#card3-content] , [] , TEXT+Feature Three; STYLE+margin:0 0 10px 0;color:#333;font-size:18px;font-weight:700 EL>
+<BL CREATE p#card3-desc @[#card3-content] , [] , TEXT+Stunning layout; STYLE+margin:0;color:#666;font-size:13px EL>
+
+<EMK>`,
+      physics: `<BMK>
+<!-- Physics Simulation -->
+<BL CREATE div#app @[#preview-content] , [100%x100%] , STYLE+padding:20px;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;font-family:system-ui,sans-serif;position:relative;overflow:hidden EL>
+
+<BL CREATE h1#title @[#app] , [] , TEXT+🎮 Physics Playground; STYLE+position:absolute;top:20px;left:20px;color:white;margin:0;font-size:24px;z-index:10 EL>
+
+<BL CREATE button#reset-physics @[#app] , [] , TEXT+Reset; STYLE+position:absolute;top:20px;right:20px;padding:10px 20px;background:white;color:#667eea;border:none;border-radius:6px;cursor:pointer;font-weight:700;z-index:10; ONCLICK+resetPhysics() EL>
+
+<!-- Bouncing Balls -->
+<BL CREATE div#ball1 @[#app] , [50x50] , STYLE+background:radial-gradient(circle at 30% 30%,#ff6b6b,#cc0000);border-radius:50%;position:absolute;left:100px;top:100px;box-shadow:0 4px 15px rgba(255,0,0,0.5); PHYSICS+true; VELOCITY+3,0 EL>
+
+<BL CREATE div#ball2 @[#app] , [50x50] , STYLE+background:radial-gradient(circle at 30% 30%,#00ff00,#00cc00);border-radius:50%;position:absolute;left:200px;top:50px;box-shadow:0 4px 15px rgba(0,255,0,0.5); PHYSICS+true; VELOCITY+−2,1 EL>
+
+<BL CREATE div#ball3 @[#app] , [50x50] , STYLE+background:radial-gradient(circle at 30% 30%,#00aaff,#0088ff);border-radius:50%;position:absolute;left:300px;top:100px;box-shadow:0 4px 15px rgba(0,170,255,0.5); PHYSICS+true; VELOCITY+0,2 EL>
+
+<BL CREATE div#ball4 @[#app] , [50x50] , STYLE+background:radial-gradient(circle at 30% 30%,#ffff00,#ffcc00);border-radius:50%;position:absolute;left:150px;top:200px;box-shadow:0 4px 15px rgba(255,255,0,0.5); PHYSICS+true; VELOCITY+2,−1 EL>
+
+<BL CREATE div#ball5 @[#app] , [50x50] , STYLE+background:radial-gradient(circle at 30% 30%,#ff00ff,#cc00cc);border-radius:50%;position:absolute;left:400px;top:150px;box-shadow:0 4px 15px rgba(255,0,255,0.5); PHYSICS+true; VELOCITY+−3,0.5 EL>
+
+<EMK>`
+    };
+
+    // Load template helper
+    window.loadTemplate = function(name) {
+      if (templates[name]) {
+        editor.value = templates[name];
+        updateStatistics();
+        log(`✅ Template loaded: ${name}`, 'ok');
+        setTimeout(() => runProgram(editor.value), 300);
+      }
+    };
+
+    function updateStatistics() {
+      const code = editor.value;
+      lineCount.textContent = code.split('\n').length;
+      charCount.textContent = code.length;
+      const matches = code.match(/<BL/g);
+      commandCount.textContent = matches ? matches.length : 0;
     }
-}
-</script>
-<script>
-// ======== Enhanced MiniKode Functions ========
 
-// Store animation frame IDs for moving shapes
-let shapeAnimations = {};
+    editor.addEventListener('input', updateStatistics);
 
-// Built-in MiniKode Functions
-
-// Move a shape continuously
-function moveShape(id, dx, dy, repeat = false) {
-    if(!shapes[id]) return;
-
-    function move() {
-        shapes[id].x += +dx;
-        shapes[id].y += +dy;
-        drawShapes();
-        if(repeat) shapeAnimations[id] = requestAnimationFrame(move);
+    function log(msg, level = 'info') {
+      const d = document.createElement('div');
+      d.textContent = msg;
+      d.className = `console-entry ${level}`;
+      consoleEl.appendChild(d);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
     }
 
-    // Start movement
-    move();
-
-    // Save animation ID for stopping
-    if(!repeat) shapeAnimations[id] = null;
-}
-
-// Stop a moving shape
-function stopShape(id) {
-    if(shapeAnimations[id]) {
-        cancelAnimationFrame(shapeAnimations[id]);
-        shapeAnimations[id] = null;
-    }
-}
-
-// Timer with optional silent mode
-function startTimer(ms, action = null) {
-    if(action) {
-        const timer = setTimeout(() => eval(action), +ms);
-        timers.push(timer);
-        return timer;
-    } else {
-        // silent timer, just removes itself after ms
-        const timer = setTimeout(() => {}, +ms);
-        timers.push(timer);
-        return timer;
-    }
-}
-
-// ======== MiniKode Helper Functions ========
-
-function minikodeMove(args) {
-    // args = [id, dx, dy, mode]
-    const [id, dx, dy, mode] = args;
-    moveShape(id, dx, dy, mode === 'repeat');
-}
-
-function minikodeStop(args) {
-    // args = [id]
-    stopShape(args[0]);
-}
-
-function minikodeTimer(args) {
-    // args = [ms, action?]
-    const [ms, action] = args;
-    startTimer(ms, action);
-}
-
-// ======== Updated executeLine to use new functions ========
-
-function executeLine(line) {
-    const match = line.match(/<BL\s+(\w+)\s+(.*)/);
-    if(!match) return;
-
-    const cmd = match[1];
-    let argsStr = match[2].trim();
-
-    // Parse arguments (support quoted strings)
-    let args = [];
-    argsStr.replace(/"([^"]+)"|(\S+)/g, (_, quoted, plain) => {
-        args.push(quoted || plain);
-        return "";
+    clearBtn.addEventListener('click', () => {
+      consoleEl.innerHTML = '';
+      previewContent.innerHTML = '';
+      runtime.commandCount = 0;
+      runtime.errors = 0;
+      physicsEngine.stop();
+      physicsEngine.objects.clear();
+      log('Cleared all', 'ok');
     });
 
-    switch(cmd) {
-        case "createRect":
-            const [rid, x, y, w, h, color] = args;
-            shapes[rid] = {type:"rect", x:+x, y:+y, w:+w, h:+h, color};
-            break;
-        case "createCircle":
-            const [cid, cx, cy, r, ccolor] = args;
-            shapes[cid] = {type:"circle", x:+cx, y:+cy, r:+r, color: ccolor};
-            break;
-        case "createText":
-            const [tid, tx, ty, text, size, tcolor] = args;
-            shapes[tid] = {type:"text", x:+tx, y:+ty, text, size:+size, color:tcolor};
-            break;
-        case "moveShape":
-            minikodeMove(args);
-            break;
-        case "stopShape":
-            minikodeStop(args);
-            break;
-        case "startTimer":
-            minikodeTimer(args);
-            break;
-        case "createButton":
-            const [label, bx, by, baction] = args;
-            const btn = document.createElement('button');
-            btn.classList.add('minikode-btn');
-            btn.style.left = bx+"px";
-            btn.style.top = by+"px";
-            btn.innerText = label;
-            btn.onclick = () => {
-                // parse action using MiniKode commands if possible
-                if(baction.startsWith("move") || baction.startsWith("stop") || baction.startsWith("startTimer")) {
-                    const parts = baction.split(" ");
-                    const command = parts.shift();
-                    executeLine(`<BL ${command} ${parts.join(" ")}>`);
-                } else {
-                    eval(baction);
-                }
-            };
-            document.body.appendChild(btn);
-            break;
-        default:
-            console.log("Unknown command:", cmd);
+    formatBtn.addEventListener('click', () => {
+      try {
+        const formatted = editor.value
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+          .join('\n');
+        editor.value = formatted;
+        updateStatistics();
+        log('Code formatted', 'ok');
+      } catch (e) {
+        log(`Format error: ${e.message}`, 'err');
+      }
+    });
+
+    // Parser helpers (same)
+    function parseShorthand(word) {
+      let tag = 'div', id = null, classes = [];
+      let buf = '', state = 'tag';
+      for (let c of word) {
+        if (c === '#') {
+          if (state === 'tag' && buf) tag = buf;
+          buf = '';
+          state = 'id';
+          continue;
+        }
+        if (c === '.') {
+          if (state === 'tag' && buf) tag = buf;
+          if (state === 'id' && buf) id = buf;
+          if (state === 'class' && buf) classes.push(buf);
+          buf = '';
+          state = 'class';
+          continue;
+        }
+        buf += c;
+      }
+      if (buf) {
+        if (state === 'tag') tag = buf;
+        else if (state === 'id') id = buf;
+        else if (state === 'class') classes.push(buf);
+      }
+      return { tag, id, classes };
     }
-    drawShapes();
-}
-function runMiniKode() {
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Stop all moving shapes
-    for (let id in shapeAnimations) {
-        if (shapeAnimations[id]) cancelAnimationFrame(shapeAnimations[id]);
+    function extractProgram(text) {
+      const start = text.indexOf('<BMK>');
+      const end = text.indexOf('<EMK>');
+      if (start === -1 || end === -1 || end <= start) return null;
+      return text.slice(start + 5, end).trim();
     }
-    shapeAnimations = {};
 
-    // Clear timers
-    timers.forEach(timer => clearTimeout(timer));
-    timers = [];
+    function extractBlocks(program) {
+      const blocks = [];
+      const re = /<BL\s+([\s\S]*?)\s+EL>/g;
+      let m;
+      while ((m = re.exec(program)) !== null) {
+        blocks.push(m[1].trim());
+      }
+      return blocks;
+    }
 
-    // Remove old buttons
-    document.querySelectorAll('button.minikode-btn').forEach(b => b.remove());
+    function parseBlockText(s) {
+      const re = /^\s*([^\s]+)\s+([^\s@,]+)\s*(?:@\s*\[([^\]]*)\])?\s*(?:,\s*\[([^\]]*)\])?\s*(?:,\s*(.*))?$/s;
+      const m = s.match(re);
+      if (!m) {
+        const parts = s.split(/\s+/);
+        return {
+          action: parts[0] || '',
+          thing: parts[1] || '',
+          position: null,
+          size: null,
+          paramsRaw: ''
+        };
+      }
+      return {
+        action: m[1].trim(),
+        thing: m[2].trim(),
+        position: m[3] ? m[3].trim() : null,
+        size: m[4] ? m[4].trim() : null,
+        paramsRaw: m[5] ? m[5].trim() : ''
+      };
+    }
 
-    // Reset shapes
-    shapes = {};
+    // Improved param parser (keeps STYLE blocks containing colons/semicolons together)
+    function parseParams(paramsRaw) {
+      if (!paramsRaw) return [];
+      const out = [];
+      let i = 0;
 
-    // Get MiniKode code
-    const code = document.getElementById('minikode').value;
-    const mkCode = code.match(/<!MK>([\s\S]*?)<\/EMK>/);
-    if (!mkCode) { alert("No MiniKode code found"); return; }
+      while (i < paramsRaw.length) {
+        // find next KEY+
+        let keyEnd = paramsRaw.indexOf('+', i);
+        if (keyEnd === -1) break;
 
-    const lines = mkCode[1].split(/>EL/).map(l => l.trim()).filter(l => l);
-    lines.forEach(line => executeLine(line));
+        let key = paramsRaw.slice(i, keyEnd).trim();
+        let value = '';
+        let j = keyEnd + 1;
 
-    drawShapes();
-}
+        // collect value until we find a comma/semicolon that likely starts NEXT KEY+
+        while (j < paramsRaw.length) {
+          const c = paramsRaw[j];
+          if (c === ',' || c === ';') {
+            // lookahead: is the following token a KEY+ ?
+            const remaining = paramsRaw.slice(j + 1).trim();
+            const nextPlus = remaining.indexOf('+');
+            if (nextPlus !== -1) {
+              const textBeforePlus = remaining.slice(0, nextPlus).trim();
+              // heuristics: if textBeforePlus is short and looks like an uppercase KEY (no ':'), then it's a key, so break
+              if (/^[A-Z0-9_-]{1,20}$/.test(textBeforePlus)) {
+                break;
+              }
+            }
+          }
+          value += c;
+          j++;
+        }
 
-// ======== End of Enhanced Functions ========
-// ======= MiniKode Help Button & Overlay =======
+        out.push({ k: key.toUpperCase(), v: value.trim() });
 
-// Create the help button
-const h1 = document.querySelector('h1');
-const helpBtn = document.createElement('button');
-helpBtn.innerText = "Help";
-helpBtn.style.marginLeft = "20px";
-helpBtn.style.padding = "5px 10px";
-helpBtn.style.fontSize = "16px";
-helpBtn.style.cursor = "pointer";
-h1.appendChild(helpBtn);
+        // skip separators
+        while (j < paramsRaw.length && (paramsRaw[j] === ',' || paramsRaw[j] === ';' || paramsRaw[j] === ' ')) {
+          j++;
+        }
+        i = j;
+      }
 
-// Create overlay container
-const helpOverlay = document.createElement('div');
-helpOverlay.style.position = "fixed";
-helpOverlay.style.top = "0";
-helpOverlay.style.left = "0";
-helpOverlay.style.width = "100%";
-helpOverlay.style.height = "100%";
-helpOverlay.style.backgroundColor = "rgba(0,0,0,0.8)";
-helpOverlay.style.color = "#fff";
-helpOverlay.style.display = "none";
-helpOverlay.style.zIndex = "1000";
-helpOverlay.style.overflowY = "scroll";
-helpOverlay.style.padding = "20px";
-helpOverlay.style.boxSizing = "border-box";
+      // If parser missed tokens like "display:block" (no +), attempt to recover:
+      // split by separators and find plain colon tokens and attach to last STYLE or treat as STYLE
+      try {
+        const parts = paramsRaw.split(/[,;]\s*/).map(p => p.trim()).filter(Boolean);
+        for (let p of parts) {
+          if (p.indexOf('+') === -1 && p.indexOf(':') !== -1) {
+            // check if already present in out
+            const exists = out.some(o => o.v.includes(p) || o.k === p.toUpperCase());
+            if (!exists) {
+              // attach to last STYLE if exists
+              const lastStyle = out.slice().reverse().find(o => o.k === 'STYLE');
+              if (lastStyle) {
+                lastStyle.v = (lastStyle.v ? lastStyle.v + ';' : '') + p;
+              } else {
+                out.push({ k: 'STYLE', v: p });
+              }
+            }
+          } else if (p.indexOf('+') === -1 && p.indexOf('=') !== -1) {
+            // e.g., src=https... => ATTR
+            const lastAttr = out.slice().reverse().find(o => o.k === 'ATTR');
+            if (lastAttr) {
+              lastAttr.v = (lastAttr.v ? lastAttr.v + ';' : '') + p;
+            } else {
+              out.push({ k: 'ATTR', v: p });
+            }
+          }
+        }
+      } catch (e) { /* noop */ }
 
-// Add close button inside overlay
-const closeBtn = document.createElement('button');
-closeBtn.innerText = "Close";
-closeBtn.style.padding = "5px 10px";
-closeBtn.style.fontSize = "16px";
-closeBtn.style.cursor = "pointer";
-closeBtn.style.marginBottom = "20px";
-helpOverlay.appendChild(closeBtn);
+      return out;
+    }
 
-// Help content
-const helpContent = document.createElement('div');
-helpContent.innerHTML = `
-<h2>MiniKode Help</h2>
-<p>MiniKode syntax uses <code>&lt;BL command args &gt;EL</code> blocks inside <code>&lt;!MK&gt;</code> ... <code>&lt;/EMK&gt;</code></p>
-<h3>Shape Commands</h3>
-<ul>
-<li><b>createRect</b> id x y width height color</li>
-<li><b>createCircle</b> id x y radius color</li>
-<li><b>createText</b> id x y "text" size color</li>
-</ul>
-<h3>Movement Commands</h3>
-<ul>
-<li><b>moveShape</b> id dx dy repeat|once</li>
-<li><b>stopShape</b> id</li>
-</ul>
-<h3>Timer</h3>
-<ul>
-<li><b>startTimer</b> milliseconds "optionalAction"</li>
-</ul>
-<h3>Buttons</h3>
-<ul>
-<li><b>createButton</b> "Label" x y "action"</li>
-<li>Actions can be MiniKode commands (moveShape, stopShape, startTimer) or JS code (alert, etc.)</li>
-</ul>
-<h3>Example:</h3>
-<pre>
-&lt;!MK&gt;
-&lt;BL createRect rect1 50 50 100 100 red &gt;EL
-&lt;BL moveShape rect1 5 0 repeat &gt;EL
-&lt;BL startTimer 1000 "stopShape rect1" &gt;EL
-&lt;/EMK&gt;
-</pre>
-`;
-helpOverlay.appendChild(helpContent);
-document.body.appendChild(helpOverlay);
+    function applyStyleFromString(el, cssString) {
+      if (!cssString) return;
+      const rules = cssString.split(';').map(s => s.trim()).filter(Boolean);
+      for (let r of rules) {
+        const idx = r.indexOf(':');
+        if (idx === -1) continue;
+        const prop = r.slice(0, idx).trim();
+        const val = r.slice(idx + 1).trim();
+        try {
+          const jsProp = prop.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+          el.style[jsProp] = val;
+        } catch (e) {
+          console.warn('Style error:', e);
+        }
+      }
+    }
 
-// Event listeners
-helpBtn.onclick = () => helpOverlay.style.display = "block";
-closeBtn.onclick = () => helpOverlay.style.display = "none";
+    function applyAttrFromString(el, attrString) {
+      if (!attrString) return;
+      const pairs = attrString.split(/[;|]/).map(s => s.trim()).filter(Boolean);
+      for (let p of pairs) {
+        const eq = p.indexOf('=');
+        if (eq === -1) {
+          el.setAttribute(p, '');
+          continue;
+        }
+        const key = p.slice(0, eq).trim();
+        const val = p.slice(eq + 1).trim();
+        el.setAttribute(key, val);
+      }
+    }
 
-</script>
+    // Ensure elements are visible: display not none and have at least fallback size if nothing set
+    function ensureVisible(el, parsed) {
+      // ensure parent preview has position relative and some min height
+      previewContent.style.position = previewContent.style.position || 'relative';
+      if (previewContent.clientHeight < 50) previewContent.style.minHeight = '200px';
+
+      // if display none
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none') {
+        el.style.display = 'block';
+        log(`(fix) display set to block for ${el.tagName.toLowerCase()}${el.id?('#'+el.id):''}`, 'info');
+      }
+
+      // if width/height are zero, try to set sensible defaults:
+      // - if size parameter provided, that should have been applied already.
+      // - otherwise, use min-size (50x50 for div-like elements, or 24px for text-like)
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      const tag = el.tagName.toLowerCase();
+
+      if ((w === 0 || h === 0) && !el.hasAttribute('data-no-default-size')) {
+        // avoid overriding images that will load; detect img
+        if (tag === 'img') {
+          // set a visible placeholder size if none
+          if (w === 0) el.style.minWidth = '80px';
+          if (h === 0) el.style.minHeight = '50px';
+        } else if (tag === 'input' || tag === 'textarea') {
+          if (w === 0) el.style.minWidth = '120px';
+          if (h === 0) el.style.minHeight = '28px';
+        } else {
+          if (w === 0) el.style.minWidth = '50px';
+          if (h === 0) el.style.minHeight = '50px';
+        }
+        log(`(fix) applied fallback size to ${el.tagName.toLowerCase()}${el.id?('#'+el.id):''}`, 'info');
+      }
+
+      // ensure element is not hidden by zero opacity
+      if (cs.opacity === '0') el.style.opacity = '1';
+    }
+
+    // core: create element and handle params
+    function runBlock(parsed) {
+      const { action, thing, position, size, paramsRaw } = parsed;
+      const params = parseParams(paramsRaw);
+      const shorthand = parseShorthand(thing);
+      const el = document.createElement(shorthand.tag || 'div');
+
+      if (shorthand.id) el.id = shorthand.id;
+      if (shorthand.classes && shorthand.classes.length) el.className = shorthand.classes.join(' ');
+
+      let appendTo = previewContent;
+
+      // position param handling
+      if (position) {
+        if (/^[#.]/.test(position.trim())) {
+          const parent = document.querySelector(position.trim());
+          if (parent) appendTo = parent;
+        } else if (/^\d+\s*[,x]\s*\d+/.test(position)) {
+          const parts = position.split(/[ ,x]/).map(s => s.trim()).filter(Boolean);
+          el.style.position = 'absolute';
+          el.style.left = (isNaN(+parts[0]) ? parts[0] : (parts[0] + 'px'));
+          el.style.top = (isNaN(+parts[1]) ? parts[1] : (parts[1] + 'px'));
+          previewContent.style.position = 'relative';
+        } else {
+          // treat as style string
+          applyStyleFromString(el, position);
+        }
+      }
+
+      // size param handling
+      if (size) {
+        if (/x/.test(size) || /,/.test(size)) {
+          const parts = size.split(/[x,]/).map(s => s.trim());
+          if (parts[0]) el.style.width = parts[0].replace(/\s+/g, '');
+          if (parts[1]) el.style.height = parts[1].replace(/\s+/g, '');
+        } else if (size.includes(':') || size.includes(';')) {
+          applyStyleFromString(el, size);
+        } else if (size.match(/^\d+$/)) {
+          el.style.width = size + 'px';
+        }
+      }
+
+      // handle params
+      for (let p of params) {
+        const k = p.k;
+        const v = p.v;
+
+        if (k === 'TEXT') {
+          el.textContent = v;
+        } else if (k === 'HTML') {
+          el.innerHTML = v;
+        } else if (k === 'STYLE') {
+          applyStyleFromString(el, v);
+        } else if (k === 'ATTR') {
+          applyAttrFromString(el, v);
+        } else if (k === 'CLASS') {
+          el.classList.add(...v.split(/\s+/).filter(Boolean));
+        } else if (k === 'ID') {
+          el.id = v;
+        } else if (k === 'APPEND') {
+          const parent = document.querySelector(v);
+          if (parent) appendTo = parent;
+        } else if (k === 'ONCLICK') {
+          el.addEventListener('click', () => handleMiniKodeClick(v, el));
+        } else if (k === 'ONEVENT') {
+          const i = v.indexOf(':');
+          if (i > -1) {
+            const ev = v.slice(0, i).trim();
+            const code = v.slice(i + 1);
+            el.addEventListener(ev, () => handleMiniKodeEvent(code, el));
+          }
+        } else if (k === 'DATA') {
+          const pairs = v.split(/[;|]/).map(x => x.trim()).filter(Boolean);
+          for (let pr of pairs) {
+            const eq = pr.indexOf('=');
+            if (eq > -1) {
+              el.dataset[pr.slice(0, eq)] = pr.slice(eq + 1);
+            }
+          }
+        } else if (k === 'PHYSICS') {
+          // schedule registration after append, see below
+          // store marker on element to act on later
+          if (v.toLowerCase() === 'true' || v === '') {
+            el.dataset._minikode_physics = 'true';
+          }
+        } else if (k === 'VELOCITY') {
+          el.dataset._minikode_velocity = v;
+        } else if (k === 'GRAVITY') {
+          physicsEngine.gravity = parseFloat(v) || physicsEngine.gravity;
+          log(`✓ Gravity set to ${physicsEngine.gravity}`, 'ok');
+        } else if (k === 'FRICTION') {
+          el.dataset._minikode_friction = v;
+        } else if (k === 'BOUNCE') {
+          el.dataset._minikode_bounce = v;
+        } else {
+          // Try to be forgiving: if unknown token contains ":" treat as style
+          if ((k && k.includes(':')) || (v && v.includes(':'))) {
+            const fragment = (k.includes(':') && !v) ? k : v;
+            applyStyleFromString(el, fragment);
+            log(`(recover) applied fragment as STYLE: ${fragment}`, 'info');
+          } else if ((k && k.includes('=')) || (v && v.includes('='))) {
+            const fragment = (k.includes('=') && !v) ? k : v;
+            applyAttrFromString(el, fragment);
+            log(`(recover) applied fragment as ATTR: ${fragment}`, 'info');
+          } else {
+            // unknown param: log but do not stop execution
+            log(`Unknown param ${k}${v?('='+v):''}`, 'info');
+          }
+        }
+      }
+
+      // Append element
+      appendTo.appendChild(el);
+
+      // AFTER append: ensure visible & register physics on next frame
+      requestAnimationFrame(() => {
+        try {
+          ensureVisible(el, parsed);
+
+          // if element was marked for physics, register now so offsetWidth/offsetHeight are correct
+          if (el.dataset._minikode_physics === 'true') {
+            // gather config
+            const cfg = {};
+            if (el.dataset._minikode_friction) cfg.friction = parseFloat(el.dataset._minikode_friction);
+            if (el.dataset._minikode_bounce) cfg.bounce = parseFloat(el.dataset._minikode_bounce);
+            physicsEngine.addObject(el, cfg);
+            physicsEngine.start();
+            log(`✓ Physics enabled for #${el.id || thing}`, 'ok');
+
+            // apply velocity if present
+            if (el.dataset._minikode_velocity) {
+              const parts = el.dataset._minikode_velocity.split(/[,x]/).map(s => parseFloat(s.trim()));
+              if (parts.length === 2) physicsEngine.applyVelocity(el, parts[0], parts[1]);
+            }
+          }
+        } catch (err) {
+          log('Post-create fix error: ' + (err.message || err), 'err');
+        }
+      });
+
+      runtime.elements.set(el.id || thing, el);
+      return el;
+    }
+
+    // event handlers (same as before)
+    function handleMiniKodeClick(action, el) {
+      if (action === 'incrementCounter()') {
+        const display = document.getElementById('display');
+        let count = parseInt(display.textContent) || 0;
+        count++;
+        display.textContent = count;
+        display.style.transform = 'scale(1.1)';
+        setTimeout(() => display.style.transform = 'scale(1)', 150);
+        log(`Counter incremented to ${count}`, 'info');
+      } else if (action === 'decrementCounter()') {
+        const display = document.getElementById('display');
+        let count = parseInt(display.textContent) || 0;
+        count--;
+        display.textContent = count;
+        display.style.transform = 'scale(1.1)';
+        setTimeout(() => display.style.transform = 'scale(1)', 150);
+        log(`Counter decremented to ${count}`, 'info');
+      } else if (action === 'resetCounter()') {
+        document.getElementById('display').textContent = '0';
+        log('Counter reset', 'info');
+      } else if (action === 'addTodoItem()') {
+        const input = document.getElementById('task-input');
+        if (input && input.value.trim()) {
+          const li = document.createElement('div');
+          li.style.cssText = 'display: flex; align-items: center; gap: 10px; padding: 12px; background: #fafafa; border-radius: 8px; border-left: 4px solid #667eea;';
+          li.innerHTML = `
+            <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;" />
+            <span style="flex: 1; color: #333; font-size: 13px;">${input.value}</span>
+            <button onclick="this.parentElement.remove()" style="padding: 4px 10px; background: #ff6b6b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Delete</button>
+          `;
+          document.getElementById('tasks-list').appendChild(li);
+          document.getElementById('empty-state').style.display = 'none';
+          log(`Task added`, 'info');
+          input.value = '';
+        }
+      } else if (action === 'submitForm()') {
+        const name = document.getElementById('name')?.value;
+        const email = document.getElementById('email')?.value;
+        const message = document.getElementById('message')?.value;
+
+        const status = document.getElementById('form-status');
+        if (name && email && message) {
+          status.style.display = 'block';
+          status.style.background = '#e0ffe0';
+          status.style.color = '#51cf66';
+          status.textContent = '✅ Message sent successfully!';
+          log('Form submitted successfully', 'ok');
+        } else {
+          status.style.display = 'block';
+          status.style.background = '#ffe0e0';
+          status.style.color = '#ff6b6b';
+          status.textContent = '❌ Please fill all fields';
+          log('Form validation failed', 'err');
+        }
+      } else if (action === 'resetPhysics()') {
+        physicsEngine.stop();
+        physicsEngine.objects.clear();
+        previewContent.innerHTML = '';
+        log('Physics simulation reset', 'ok');
+        setTimeout(() => runProgram(editor.value), 300);
+      } else {
+        log(`Unhandled click action: ${action}`, 'info');
+      }
+    }
+
+    function handleMiniKodeEvent(code, el) {
+      log(`Event triggered: ${code}`, 'info');
+    }
+
+    window.resetPhysics = function() {
+      physicsEngine.stop();
+      physicsEngine.objects.clear();
+      previewContent.innerHTML = '';
+      log('Physics simulation reset', 'ok');
+      setTimeout(() => runProgram(editor.value), 300);
+    };
+
+    // run program
+    function runProgram(text) {
+      consoleEl.innerHTML = '';
+      log('🚀 Starting MiniKode execution...', 'info');
+
+      const program = extractProgram(text);
+      if (!program) {
+        log('❌ No <BMK> ... <EMK> block found', 'err');
+        return;
+      }
+
+      const blocks = extractBlocks(program);
+      if (!blocks.length) {
+        log('❌ No <BL ... EL> blocks found', 'err');
+        return;
+      }
+
+      log(`📋 Found ${blocks.length} command(s)`, 'info');
+      previewContent.innerHTML = '';
+      physicsEngine.objects.clear();
+      physicsEngine.isRunning = false;
+      runtime.commandCount = 0;
+
+      for (let i = 0; i < blocks.length; i++) {
+        const btxt = blocks[i];
+        try {
+          const parsed = parseBlockText(btxt);
+          log(`#${i + 1}: ${parsed.action} ${parsed.thing}`, 'info');
+          const created = runBlock(parsed);
+          runtime.commandCount++;
+          if (created && created.id) {
+            log(`✓ Created element #${created.id}`, 'ok');
+          }
+        } catch (e) {
+          log(`Block ${i + 1} error: ${e.message || e}`, 'err');
+          runtime.errors++;
+        }
+      }
+
+      log(`✅ Execution complete! ${runtime.commandCount} commands executed`, 'ok');
+      updateStatistics();
+    }
+
+    runBtn.addEventListener('click', () => runProgram(editor.value));
+
+    editor.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        runProgram(editor.value);
+      }
+    });
+
+    // hints
+    function initializeHints() {
+      hintBox.innerHTML = `
+        <strong>📚 Pure MiniKode v3.0 Syntax (fixed):</strong><br><br>
+        <strong>Structure:</strong><br>
+        <code>&lt;BMK&gt; ... &lt;EMK&gt;</code> = Program<br>
+        <code>&lt;BL ACTION ELEMENT @[pos] , [size] , PARAMS EL&gt;</code> = Command<br><br>
+        
+        <strong>Common Actions:</strong><br>
+        CREATE, TEXT, STYLE, ATTR, CLASS, HTML, ONCLICK, DATA, PHYSICS, VELOCITY<br><br>
+        
+        <strong>Notes:</strong><br>
+        - If stray fragments like <code>display:block</code> appear, the engine recovers and applies them as STYLE.<br>
+        - Elements with no size get sensible fallbacks so you can see them.<br>
+        - Physics objects are registered after layout so balls show up reliably.
+      `;
+    }
+
+    initializeHints();
+    updateStatistics();
+
+    // load default
+    setTimeout(() => {
+      loadTemplate('counter');
+    }, 300);
+  </script>
 </body>
 </html>
-
-
