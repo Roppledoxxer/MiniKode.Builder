@@ -1,1200 +1,1246 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <title>MiniKode.Builder — Code</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <style>
-    * { box-sizing: border-box; }
-    :root {
-      --bg: #071026;
-      --panel: #0b1227;
-      --muted: #94a3b8;
-      --accent: #6ee7b7;
-      --error: #ff6b6b;
-      --success: #51cf66;
-      --warning: #ffd43b;
-    }
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: 'Fira Code', 'Monaco', 'Menlo', monospace;
-      background: linear-gradient(180deg, #071026 0%, #071b2b 100%);
-      color: #e6eef6;
-    }
-    .container {
-      display: flex;
-      height: 100vh;
-      flex-direction: column;
-    }
-    .header {
-      padding: 14px 16px;
-      background: rgba(0, 0, 0, 0.3);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .header h2 {
-      margin: 0;
-      color: var(--accent);
-      font-size: 18px;
-      font-weight: 700;
-    }
-    .header-info {
-      display: flex;
-      gap: 20px;
-      font-size: 11px;
-      color: var(--muted);
-    }
-    .header-stat {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-    .stat-value {
-      color: var(--accent);
-      font-weight: 700;
-    }
-    .wrap {
-      display: flex;
-      gap: 12px;
-      padding: 14px;
-      flex: 1;
-      overflow: hidden;
-    }
-    .panel {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 10px;
-      padding: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      display: flex;
-      flex-direction: column;
-    }
-    .panel-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--accent);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .editor-panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-    .editor-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-    textarea {
-      width: 100%;
-      flex: 1;
-      background: transparent;
-      color: #c8d6e5;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 12px;
-      border-radius: 8px;
-      font-family: inherit;
-      font-size: 12px;
-      resize: none;
-      outline: none;
-      line-height: 1.6;
-      min-height: 0;
-      white-space: pre;
-    }
-    textarea:focus {
-      border-color: rgba(110, 231, 183, 0.3);
-      box-shadow: 0 0 0 2px rgba(110, 231, 183, 0.1);
-    }
-    .controls-bar {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-top: 10px;
-      flex-wrap: wrap;
-      padding: 8px;
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 6px;
-    }
-    button {
-      padding: 8px 14px;
-      border-radius: 6px;
-      border: 1px solid rgba(110, 231, 183, 0.3);
-      background: linear-gradient(135deg, rgba(110, 231, 183, 0.1), rgba(110, 231, 183, 0.05));
-      color: var(--accent);
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 11px;
-      font-family: inherit;
-      transition: all 0.2s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-    button:hover {
-      background: linear-gradient(135deg, rgba(110, 231, 183, 0.2), rgba(110, 231, 183, 0.1));
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(110, 231, 183, 0.15);
-    }
-    button:active {
-      transform: translateY(0);
-    }
-    button.danger {
-      border-color: rgba(255, 107, 107, 0.3);
-      background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05));
-      color: var(--error);
-    }
-    button.danger:hover {
-      background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 107, 107, 0.1));
-      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15);
-    }
-    .right-panel {
-      width: 700px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .preview-container {
-      background: white;
-      border-radius: 10px;
-      flex: 1;
-      overflow: hidden;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-    }
-    .preview-header {
-      padding: 10px 14px;
-      background: #f8f9fa;
-      border-bottom: 1px solid #e9ecef;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      font-weight: 600;
-      color: #495057;
-    }
-    .preview-content {
-      width: 100%;
-      flex: 1;
-      overflow: auto;
-      padding: 0;
-      position: relative; /* ensure absolute-position children have a reference */
-      min-height: 240px;   /* ensure visible area by default */
-      background: #ffffff;
-    }
-    .console-panel {
-      font-family: inherit;
-      background: linear-gradient(180deg, #051526 0%, #081a2a 100%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 12px;
-      border-radius: 8px;
-      height: 160px;
-      overflow-y: auto;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.5;
-    }
-    .console-entry {
-      margin-bottom: 6px;
-      padding: 4px 0 4px 6px;
-      border-left: 2px solid transparent;
-    }
-    .console-entry.info {
-      color: #94a3b8;
-      border-left-color: #4b5563;
-    }
-    .console-entry.ok {
-      color: #51cf66;
-      border-left-color: #37b24d;
-    }
-    .console-entry.err {
-      color: #ff8787;
-      border-left-color: #f03e3e;
-    }
-    .code-hint {
-      background: rgba(255, 255, 255, 0.02);
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 8px;
-      font-size: 10px;
-      color: var(--muted);
-      line-height: 1.5;
-      border-left: 2px solid var(--accent);
-      max-height: 120px;
-      overflow-y: auto;
-    }
-    .code-hint code {
-      background: rgba(0, 0, 0, 0.2);
-      padding: 2px 6px;
-      border-radius: 3px;
-      color: #6ee7b7;
-      font-size: 9px;
-    }
-    .templates-bar {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-    .template-btn {
-      padding: 6px 10px;
-      font-size: 10px;
-      background: rgba(110, 231, 183, 0.08);
-      border: 1px solid rgba(110, 231, 183, 0.2);
-      color: var(--accent);
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      flex: 1;
-      min-width: 90px;
-    }
-    .template-btn:hover {
-      background: rgba(110, 231, 183, 0.15);
-      border-color: rgba(110, 231, 183, 0.4);
-    }
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(110, 231, 183, 0.3);
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(110, 231, 183, 0.5);
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MiniKode.Builder — MiniKode 2.1</title>
+<style>
+  *{box-sizing:border-box}
+  :root{
+    --bg:#07101f;--panel:#0d1729;--panel2:#111e34;--line:#22314b;
+    --text:#e8eef7;--muted:#8fa0b8;--accent:#63e6be;--accent2:#4dabf7;
+    --danger:#ff6b6b;--warn:#ffd43b;--ok:#69db7c;
+  }
+  html,body{height:100%;margin:0}
+  body{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    background:radial-gradient(circle at top,#10203b 0,#07101f 45%,#050b14 100%);
+    color:var(--text);overflow:auto
+  }
+  button,textarea{font:inherit}
+  .app{min-height:100vh;height:100vh;display:grid;grid-template-rows:auto minmax(0,1fr)}
+  header{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:12px 16px;border-bottom:1px solid var(--line);
+    background:rgba(5,11,20,.82);backdrop-filter:blur(12px)
+  }
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand h1{font-size:16px;margin:0;color:var(--accent)}
+  .badge{font-size:10px;color:#9ae6ff;border:1px solid #24506d;padding:3px 7px;border-radius:999px}
+  .stats{display:flex;gap:16px;color:var(--muted);font-size:10px}
+  .stats b{color:var(--text)}
+  main{
+    min-height:0;display:grid;grid-template-columns:minmax(360px,1.05fr) minmax(420px,.95fr);
+    gap:12px;padding:12px
+  }
+  .panel{
+    min-height:0;background:rgba(13,23,41,.84);border:1px solid var(--line);
+    border-radius:12px;display:flex;flex-direction:column;overflow:hidden
+  }
+  .panel-head{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:9px 11px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02)
+  }
+  .panel-title{font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--accent)}
+  .toolbar{display:flex;gap:7px;flex-wrap:wrap}
+  button{
+    border:1px solid #2b4a64;background:#102238;color:#bdebdc;border-radius:7px;
+    padding:7px 10px;font-size:10px;cursor:pointer;transition:.15s
+  }
+  button:hover{transform:translateY(-1px);border-color:#3a6985;background:#15304a}
+  button.primary{background:#123b33;border-color:#2b8a70;color:#b8f7e7}
+  button.danger{background:#351b22;border-color:#703340;color:#ffb0b0}
+  button.ghost{background:transparent}
+  .editor-wrap{flex:1;min-height:0;position:relative}
+  textarea{
+    width:100%;height:100%;resize:none;outline:0;border:0;background:#08111e;color:#dce7f3;
+    padding:14px 16px;line-height:1.55;font-size:12px;tab-size:2;white-space:pre;overflow:auto
+  }
+  textarea:focus{box-shadow:inset 0 0 0 1px rgba(99,230,190,.2)}
+  .bottom{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px;border-top:1px solid var(--line)
+  }
+  .box{
+    min-width:0;background:#091322;border:1px solid var(--line);border-radius:8px;padding:9px
+  }
+  .box h3{font-size:10px;margin:0 0 7px;color:#9eb0c7;text-transform:uppercase}
+  .templates{display:flex;gap:6px;flex-wrap:wrap}
+  .templates button{flex:1;min-width:70px}
+  .hint{font-size:10px;line-height:1.55;color:var(--muted);max-height:95px;overflow:auto}
+  .preview{min-height:0;display:flex;flex-direction:column}
+  .preview-frame{flex:1;min-height:0;background:#fff;overflow:auto;position:relative}
+  .console{height:170px;display:flex;flex-direction:column}
+  .log{
+    flex:1;overflow:auto;padding:10px;background:#06101b;color:#8fa0b8;font-size:10px;line-height:1.55
+  }
+  .entry{padding:3px 0 3px 7px;border-left:2px solid #354156;margin-bottom:5px}
+  .entry.ok{border-color:#2f9e44;color:#8ce99a}
+  .entry.err{border-color:#e03131;color:#ff8787}
+  .entry.warn{border-color:#f08c00;color:#ffd43b}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block}
+  @media(max-width:980px){body{overflow:auto}.app{height:auto;min-height:100vh}main{grid-template-columns:1fr;grid-template-rows:minmax(560px,auto) minmax(560px,70vh)}.bottom{grid-template-columns:1fr}.console{height:150px}.stats{gap:8px;flex-wrap:wrap;justify-content:flex-end}}
+  @media(max-width:560px){header{align-items:flex-start;flex-direction:column}.stats{justify-content:flex-start}main{padding:8px;gap:8px}.toolbar button{padding:7px 8px}.panel-head{align-items:flex-start;flex-wrap:wrap}}
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h2>🎨 MiniKode.Builder — MiniKode Lang (v1.1 minor bug fixes)</h2>
-      <div class="header-info">
-        <div class="header-stat">
-          <span>Lines:</span>
-          <span class="stat-value" id="lineCount">0</span>
-        </div>
-        <div class="header-stat">
-          <span>Chars:</span>
-          <span class="stat-value" id="charCount">0</span>
-        </div>
-        <div class="header-stat">
-          <span>Commands:</span>
-          <span class="stat-value" id="commandCount">0</span>
+<div class="app">
+  <header>
+    <div class="brand">
+      <span class="status-dot"></span>
+      <h1>MiniKode.Builder</h1>
+      <span class="badge">MiniKode 2.1</span>
+    </div>
+    <div class="stats">
+      <span>Lines <b id="lineCount">0</b></span>
+      <span>Chars <b id="charCount">0</b></span>
+      <span>Commands <b id="commandCount">0</b></span>
+      <span>Errors <b id="errorCount">0</b></span>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Editor</span>
+        <div class="toolbar">
+          <button class="primary" id="runBtn">▶ Run</button>
+          <button id="formatBtn">✦ Format</button>
+          <button id="saveBtn">💾 Save</button>
+          <button id="loadBtn">↶ Load</button>
+          <button class="danger" id="clearBtn">Clear</button>
         </div>
       </div>
-    </div>
 
-    <div class="wrap">
-      <!-- LEFT PANEL: EDITOR -->
-      <div class="panel editor-panel">
-        <div class="panel-title">📝 MiniKode Editor</div>
-        <div class="editor-wrapper">
-          <textarea id="editor" spellcheck="false" placeholder="Write pure MiniKode code here..."></textarea>
-        </div>
+      <div class="editor-wrap">
+        <textarea id="editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+      </div>
 
-        <div class="controls-bar">
-          <button id="runBtn">▶ Run Code</button>
-          <button id="clearBtn" class="danger">🗑 Clear All</button>
-          <button id="formatBtn">✨ Format</button>
-          <div style="flex: 1;"></div>
-          <span style="font-size: 10px; color: var(--muted);">Ctrl+Enter to run</span>
-        </div>
-
-        <!-- Templates -->
-        <div style="margin-top: 8px;">
-          <div class="panel-title" style="margin-top: 0; margin-bottom: 6px;">⚡ Quick Templates</div>
-          <div class="templates-bar">
-            <button class="template-btn" onclick="loadTemplate('counter')">Counter</button>
-            <button class="template-btn" onclick="loadTemplate('todo')">Todo</button>
-            <button class="template-btn" onclick="loadTemplate('grid')">Grid</button>
-            <button class="template-btn" onclick="loadTemplate('form')">Form</button>
-            <button class="template-btn" onclick="loadTemplate('cards')">Cards</button>
-            <button class="template-btn" onclick="loadTemplate('physics')">Physics</button>
+      <div class="bottom">
+        <div class="box">
+          <h3>Quick Templates</h3>
+          <div class="templates">
+            <button data-template="hello">Hello</button>
+            <button data-template="counter">Counter</button>
+            <button data-template="todo">Todo</button>
+            <button data-template="cards">Cards</button>
+            <button data-template="physics">Physics</button>
           </div>
         </div>
-
-        <div class="code-hint" id="hint"></div>
-      </div>
-
-      <!-- RIGHT PANEL: PREVIEW & CONSOLE -->
-      <div class="right-panel">
-        <!-- PREVIEW -->
-        <div class="preview-container">
-          <div class="preview-header">
-            👁️ Live Preview
-          </div>
-          <div class="preview-content" id="preview-content"></div>
+        <div class="box">
+          <h3>MiniKode Syntax</h3>
+          <div class="hint" id="hint"></div>
         </div>
-
-        <!-- CONSOLE -->
-        <div class="panel console-panel" id="console" role="log" tabindex="0"></div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <script>
-    /**
-     * Fixed visibility behavior:
-     * - Unknown colon-style tokens become STYLE or ATTR instead of "unknown"
-     * - After creating an element we ensure it's visible (display, min-size)
-     * - Physics objects are registered on next animation frame to get correct size
-     */
+    <section class="preview">
+      <div class="panel" style="flex:1">
+        <div class="panel-head">
+          <span class="panel-title">Live Preview</span>
+          <button class="ghost" id="refreshBtn">↻ Refresh</button>
+        </div>
+        <div class="preview-frame" id="preview"></div>
+      </div>
+      <div class="panel console">
+        <div class="panel-head"><span class="panel-title">Console</span><button class="ghost" id="consoleClear">Clear</button></div>
+        <div class="log" id="console"></div>
+      </div>
+    </section>
+  </main>
+</div>
 
-    const editor = document.getElementById('editor');
-    const consoleEl = document.getElementById('console');
-    const previewContent = document.getElementById('preview-content');
-    const runBtn = document.getElementById('runBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const formatBtn = document.getElementById('formatBtn');
-    const hintBox = document.getElementById('hint');
-    const lineCount = document.getElementById('lineCount');
-    const charCount = document.getElementById('charCount');
-    const commandCount = document.getElementById('commandCount');
+<script>
+"use strict";
 
-    const runtime = {
-      elements: new Map(),
-      variables: new Map(),
-      state: new Map(),
-      events: [],
-      timers: [],
-      validators: new Map(),
-      physics: new Map(),
-      commandCount: 0,
-      errors: 0
-    };
+/*
+  MiniKode 2.1
+  A small, browser-based language for building simple interfaces and demos.
+  The expression parser is deliberately limited: it does not execute JavaScript.
+*/
 
-    const physicsEngine = {
-      gravity: 0.6,
-      friction: 0.98,
-      objects: new Map(),
-      isRunning: false,
-      addObject: function(el, config = {}) {
-        const obj = {
-          element: el,
-          x: parseFloat(el.style.left) || el.offsetLeft || 0,
-          y: parseFloat(el.style.top) || el.offsetTop || 0,
-          vx: config.vx || 0,
-          vy: config.vy || 0,
-          ax: config.ax || 0,
-          ay: config.ay !== undefined ? config.ay : this.gravity,
-          mass: config.mass || 1,
-          friction: config.friction !== undefined ? config.friction : 0.98,
-          bounce: config.bounce || 0.7,
-          static: config.static || false,
-          drag: config.drag || false,
-          width: el.offsetWidth || parseFloat(getComputedStyle(el).width) || 1,
-          height: el.offsetHeight || parseFloat(getComputedStyle(el).height) || 1
-        };
-        this.objects.set(el.id || el, obj);
-        el.style.position = 'absolute';
-        return obj;
-      },
-      update: function() {
-        const container = previewContent;
-        const containerWidth = Math.max(1, container.clientWidth);
-        const containerHeight = Math.max(1, container.clientHeight);
+const $ = (selector, root = document) => root.querySelector(selector);
 
-        this.objects.forEach((obj, key) => {
-          if (obj.static) return;
+const runtime = {
+  vars: Object.create(null),
+  elements: new Map(),
+  cleanup: [],
+  physics: new Map(),
+  errors: 0,
+  commands: 0,
+  running: false
+};
 
-          obj.vx += obj.ax;
-          obj.vy += obj.ay;
+const refs = {
+  editor: $("#editor"),
+  preview: $("#preview"),
+  console: $("#console"),
+  lineCount: $("#lineCount"),
+  charCount: $("#charCount"),
+  commandCount: $("#commandCount"),
+  errorCount: $("#errorCount"),
+  hint: $("#hint")
+};
 
-          obj.vx *= obj.friction;
-          obj.vy *= obj.friction;
+function log(message, type = "info") {
+  const row = document.createElement("div");
+  row.className = `entry ${type}`;
+  row.textContent = String(message);
+  refs.console.appendChild(row);
+  refs.console.scrollTop = refs.console.scrollHeight;
+}
 
-          obj.x += obj.vx;
-          obj.y += obj.vy;
+function clearRuntime() {
+  if (typeof physics !== "undefined") physics.stop();
+  for (const cleanup of runtime.cleanup.splice(0)) {
+    try { cleanup(); } catch (error) { console.warn("MiniKode cleanup:", error); }
+  }
+  runtime.elements.clear();
+  runtime.physics.clear();
+  runtime.vars = Object.create(null);
+  refs.preview.replaceChildren();
+}
 
-          // Boundary collision
-          if (obj.x < 0) {
-            obj.x = 0;
-            obj.vx *= -obj.bounce;
-          }
-          if (obj.x + obj.width > containerWidth) {
-            obj.x = containerWidth - obj.width;
-            obj.vx *= -obj.bounce;
-          }
-          if (obj.y < 0) {
-            obj.y = 0;
-            obj.vy *= -obj.bounce;
-          }
-          if (obj.y + obj.height > containerHeight) {
-            obj.y = containerHeight - obj.height;
-            obj.vy *= -obj.bounce;
-          }
+function stats() {
+  const code = refs.editor.value;
+  refs.lineCount.textContent = code ? code.split(/\r?\n/).length : 0;
+  refs.charCount.textContent = code.length;
+  try {
+    refs.commandCount.textContent = normalizeLines(code).length;
+  } catch {
+    refs.commandCount.textContent = 0;
+  }
+  refs.errorCount.textContent = runtime.errors;
+}
 
-          obj.element.style.left = obj.x + 'px';
-          obj.element.style.top = obj.y + 'px';
-        });
-      },
-      start: function() {
-        if (this.isRunning) return;
-        this.isRunning = true;
-        const self = this;
-        function loop() {
-          if (!self.isRunning) return;
-          self.update();
-          requestAnimationFrame(loop);
-        }
-        requestAnimationFrame(loop);
-      },
-      stop: function() {
-        this.isRunning = false;
-      },
-      applyVelocity: function(el, vx, vy) {
-        const obj = this.objects.get(el.id || el);
-        if (obj) {
-          obj.vx = vx;
-          obj.vy = vy;
-        }
-      },
-      applyForce: function(el, fx, fy) {
-        const obj = this.objects.get(el.id || el);
-        if (obj) {
-          obj.vx += fx / obj.mass;
-          obj.vy += fy / obj.mass;
-        }
+/* ---------- source helpers ---------- */
+
+function stripComments(code) {
+  return String(code).split(/\r?\n/).map(line => {
+    let quote = null;
+    let escaped = false;
+    for (let i = 0; i < line.length - 1; i++) {
+      const char = line[i];
+      if (escaped) { escaped = false; continue; }
+      if (char === "\\") { escaped = true; continue; }
+      if (quote) {
+        if (char === quote) quote = null;
+        continue;
       }
-    };
-
-    // ---- Templates (same as before) ----
-    const templates = {
-      counter: `<BMK>
-<!-- Simple Counter with Increment/Decrement -->
-<BL CREATE div#app @[#preview-content] , [100%x100%] , STYLE+padding:40px;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif EL>
-
-<BL CREATE div#card @[#app] , [] , STYLE+background:white;border-radius:24px;padding:60px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;min-width:350px EL>
-
-<BL CREATE h1#title @[#card] , [] , TEXT+Counter App; STYLE+margin:0 0 10px 0;color:#333;font-size:36px;font-weight:800 EL>
-
-<BL CREATE p#subtitle @[#card] , [] , TEXT+Pure MiniKode; STYLE+margin:0 0 40px 0;color:#999;font-size:12px EL>
-
-<!-- Counter Display -->
-<BL CREATE div#display @[#card] , [] , TEXT+0; STYLE+font-size:120px;font-weight:900;color:#667eea;margin:30px 0;font-variant-numeric:tabular-nums EL>
-
-<!-- Buttons -->
-<BL CREATE div#buttons @[#card] , [] , STYLE+display:flex;gap:16px;justify-content:center;margin-top:40px EL>
-
-<BL CREATE button#decBtn @[#buttons] , [] , TEXT+−; STYLE+width:80px;height:80px;font-size:40px;border-radius:50%;border:none;background:#ff6b6b;color:white;cursor:pointer;font-weight:bold;transition:all 0.2s; ONCLICK+decrementCounter() EL>
-
-<BL CREATE button#resetBtn @[#buttons] , [] , TEXT+↻; STYLE+width:80px;height:80px;font-size:28px;border-radius:50%;border:none;background:#adb5bd;color:white;cursor:pointer;font-weight:bold;transition:all 0.2s; ONCLICK+resetCounter() EL>
-
-<BL CREATE button#incBtn @[#buttons] , [] , TEXT++; STYLE+width:80px;height:80px;font-size:40px;border-radius:50%;border:none;background:#51cf66;color:white;cursor:pointer;font-weight:bold;transition:all 0.2s; ONCLICK+incrementCounter() EL>
-
-<!-- Status -->
-<BL CREATE p#status @[#card] , [] , TEXT+Click to count; STYLE+margin:30px 0 0 0;color:#999;font-size:12px;min-height:20px EL>
-
-<EMK>`,
-      todo: `<BMK>
-<!-- Todo List with Add/Remove -->
-<BL CREATE div#app @[#preview-content] , [100%x100%] , STYLE+padding:20px;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;font-family:system-ui,sans-serif EL>
-
-<BL CREATE div#container @[#app] , [] , STYLE+max-width:600px;margin:0 auto;background:white;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.2);overflow:hidden EL>
-
-<BL CREATE div#header @[#container] , [] , STYLE+background:linear-gradient(135deg,#667eea,#764ba2);padding:30px;color:white EL>
-
-<BL CREATE h1#title @[#header] , [] , TEXT+📝 Todo List; STYLE+margin:0 0 6px 0;font-size:28px;font-weight:800 EL>
-
-<BL CREATE p#subtitle @[#header] , [] , TEXT+Pure MiniKode Tasks; STYLE+margin:0;opacity:0.9;font-size:12px EL>
-
-<BL CREATE div#content @[#container] , [] , STYLE+padding:20px EL>
-
-<BL CREATE div#input-area @[#content] , [] , STYLE+display:flex;gap:8px;margin-bottom:20px EL>
-
-<BL CREATE input#task-input @[#input-area] , [] , ATTR+type=text; ATTR+placeholder=Add a new task...; STYLE+flex:1;padding:10px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none EL>
-
-<BL CREATE button#add-task @[#input-area] , [] , TEXT+Add; STYLE+padding:10px 20px;background:#667eea;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700; ONCLICK+addTodoItem() EL>
-
-<BL CREATE div#tasks-list @[#content] , [] , STYLE+display:flex;flex-direction:column;gap:8px EL>
-
-<BL CREATE div#empty-state @[#content] , [] , TEXT+✨ No tasks yet; STYLE+text-align:center;padding:40px 20px;color:#bbb;font-size:14px EL>
-
-<EMK>`,
-      grid: `<BMK>
-<!-- Responsive Grid Layout -->
-<BL CREATE div#app @[#preview-content] , [100%x100%] , STYLE+padding:30px 20px;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;font-family:system-ui,sans-serif EL>
-
-<BL CREATE h1#title @[#app] , [] , TEXT+Grid Layout; STYLE+text-align:center;color:white;margin:0 0 40px 0;font-size:32px;font-weight:800 EL>
-
-<BL CREATE div#grid @[#app] , [] , STYLE+display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;max-width:1200px;margin:0 auto EL>
-
-<!-- Grid Item 1 -->
-<BL CREATE div#card1 @[#grid] , [] , STYLE+background:white;border-radius:12px;padding:30px;box-shadow:0 4px 15px rgba(0,0,0,0.1);text-align:center EL>
-<BL CREATE h3#card1-title @[#card1] , [] , TEXT+📱 Mobile; STYLE+margin:0 0 10px 0;color:#333;font-size:18px EL>
-<BL CREATE p#card1-desc @[#card1] , [] , TEXT+Responsive design; STYLE+margin:0;color:#666;font-size:12px EL>
-
-<!-- Grid Item 2 -->
-<BL CREATE div#card2 @[#grid] , [] , STYLE+background:white;border-radius:12px;padding:30px;box-shadow:0 4px 15px rgba(0,0,0,0.1);text-align:center EL>
-<BL CREATE h3#card2-title @[#card2] , [] , TEXT+🎨 Design; STYLE+margin:0 0 10px 0;color:#333;font-size:18px EL>
-<BL CREATE p#card2-desc @[#card2] , [] , TEXT+Beautiful layouts; STYLE+margin:0;color:#666;font-size:12px EL>
-
-<!-- Grid Item 3 -->
-<BL CREATE div#card3 @[#grid] , [] , STYLE+background:white;border-radius:12px;padding:30px;box-shadow:0 4px 15px rgba(0,0,0,0.1);text-align:center EL>
-<BL CREATE h3#card3-title @[#card3] , [] , TEXT+⚡ Fast; STYLE+margin:0 0 10px 0;color:#333;font-size:18px EL>
-<BL CREATE p#card3-desc @[#card3] , [] , TEXT+Lightning quick; STYLE+margin:0;color:#666;font-size:12px EL>
-
-<!-- Grid Item 4 -->
-<BL CREATE div#card4 @[#grid] , [] , STYLE+background:white;border-radius:12px;padding:30px;box-shadow:0 4px 15px rgba(0,0,0,0.1);text-align:center EL>
-<BL CREATE h3#card4-title @[#card4] , [] , TEXT+🔒 Secure; STYLE+margin:0 0 10px 0;color:#333;font-size:18px EL>
-<BL CREATE p#card4-desc @[#card4] , [] , TEXT+Always protected; STYLE+margin:0;color:#666;font-size:12px EL>
-
-<EMK>`,
-      form: `<BMK>
-<!-- Contact Form -->
-<BL CREATE div#app @[#preview-content] , [100%x100%] , STYLE+padding:40px 20px;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif EL>
-
-<BL CREATE div#form-container @[#app] , [] , STYLE+background:white;border-radius:16px;padding:40px;box-shadow:0 20px 60px rgba(0,0,0,0.2);max-width:500px;width:100% EL>
-
-<BL CREATE h1#form-title @[#form-container] , [] , TEXT+Contact Form; STYLE+margin:0 0 8px 0;color:#333;font-size:28px;font-weight:800 EL>
-
-<BL CREATE p#form-desc @[#form-container] , [] , TEXT+Pure MiniKode Form; STYLE+margin:0 0 30px 0;color:#999;font-size:12px EL>
-
-<BL CREATE div#form-group @[#form-container] , [] , STYLE+display:flex;flex-direction:column;gap:16px EL>
-
-<BL CREATE input#name @[#form-group] , [] , ATTR+type=text; ATTR+placeholder=Full Name; STYLE+padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none EL>
-
-<BL CREATE input#email @[#form-group] , [] , ATTR+type=email; ATTR+placeholder=Email Address; STYLE+padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none EL>
-
-<BL CREATE textarea#message @[#form-group] , [] , ATTR+placeholder=Your Message; STYLE+padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none;min-height:120px;resize:none EL>
-
-<BL CREATE button#submit @[#form-group] , [] , TEXT+Send Message; STYLE+padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;font-family:inherit;transition:all 0.2s; ONCLICK+submitForm() EL>
-
-<BL CREATE div#form-status @[#form-container] , [] , TEXT+; STYLE+margin-top:20px;padding:12px;border-radius:8px;text-align:center;font-size:12px;display:none EL>
-
-<EMK>`,
-      cards: `<BMK>
-<!-- Card Layout -->
-<BL CREATE div#app @[#preview-content] , [100%x100%] , STYLE+padding:30px 20px;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;font-family:system-ui,sans-serif EL>
-
-<BL CREATE div#container @[#app] , [] , STYLE+max-width:1200px;margin:0 auto EL>
-
-<BL CREATE h1#title @[#container] , [] , TEXT+Card Collection; STYLE+text-align:center;color:white;margin:0 0 40px 0;font-size:32px;font-weight:800 EL>
-
-<BL CREATE div#cards-grid @[#container] , [] , STYLE+display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px EL>
-
-<!-- Card 1 -->
-<BL CREATE div#card1 @[#cards-grid] , [] , STYLE+background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.12);transition:transform 0.3s;cursor:pointer EL>
-<BL CREATE div#card1-image @[#card1] , [] , STYLE+height:200px;background:linear-gradient(135deg,#667eea,#764ba2) EL>
-<BL CREATE div#card1-content @[#card1] , [] , STYLE+padding:24px EL>
-<BL CREATE h3#card1-title @[#card1-content] , [] , TEXT+Feature One; STYLE+margin:0 0 10px 0;color:#333;font-size:18px;font-weight:700 EL>
-<BL CREATE p#card1-desc @[#card1-content] , [] , TEXT+Amazing feature; STYLE+margin:0;color:#666;font-size:13px EL>
-
-<!-- Card 2 -->
-<BL CREATE div#card2 @[#cards-grid] , [] , STYLE+background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.12);transition:transform 0.3s;cursor:pointer EL>
-<BL CREATE div#card2-image @[#card2] , [] , STYLE+height:200px;background:linear-gradient(135deg,#f093fb,#f5576c) EL>
-<BL CREATE div#card2-content @[#card2] , [] , STYLE+padding:24px EL>
-<BL CREATE h3#card2-title @[#card2-content] , [] , TEXT+Feature Two; STYLE+margin:0 0 10px 0;color:#333;font-size:18px;font-weight:700 EL>
-<BL CREATE p#card2-desc @[#card2-content] , [] , TEXT+Incredible design; STYLE+margin:0;color:#666;font-size:13px EL>
-
-<!-- Card 3 -->
-<BL CREATE div#card3 @[#cards-grid] , [] , STYLE+background:white;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.12);transition:transform 0.3s;cursor:pointer EL>
-<BL CREATE div#card3-image @[#card3] , [] , STYLE+height:200px;background:linear-gradient(135deg,#4facfe,#00f2fe) EL>
-<BL CREATE div#card3-content @[#card3] , [] , STYLE+padding:24px EL>
-<BL CREATE h3#card3-title @[#card3-content] , [] , TEXT+Feature Three; STYLE+margin:0 0 10px 0;color:#333;font-size:18px;font-weight:700 EL>
-<BL CREATE p#card3-desc @[#card3-content] , [] , TEXT+Stunning layout; STYLE+margin:0;color:#666;font-size:13px EL>
-
-<EMK>`,
-      physics: `<BMK>
-<!-- Physics Simulation -->
-<BL CREATE div#app @[#preview-content] , [100%x100%] , STYLE+padding:20px;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;font-family:system-ui,sans-serif;position:relative;overflow:hidden EL>
-
-<BL CREATE h1#title @[#app] , [] , TEXT+🎮 Physics Playground; STYLE+position:absolute;top:20px;left:20px;color:white;margin:0;font-size:24px;z-index:10 EL>
-
-<BL CREATE button#reset-physics @[#app] , [] , TEXT+Reset; STYLE+position:absolute;top:20px;right:20px;padding:10px 20px;background:white;color:#667eea;border:none;border-radius:6px;cursor:pointer;font-weight:700;z-index:10; ONCLICK+resetPhysics() EL>
-
-<!-- Bouncing Balls -->
-<BL CREATE div#ball1 @[#app] , [50x50] , STYLE+background:radial-gradient(circle at 30% 30%,#ff6b6b,#cc0000);border-radius:50%;position:absolute;left:100px;top:100px;box-shadow:0 4px 15px rgba(255,0,0,0.5); PHYSICS+true; VELOCITY+3,0 EL>
-
-<BL CREATE div#ball2 @[#app] , [50x50] , STYLE+background:radial-gradient(circle at 30% 30%,#00ff00,#00cc00);border-radius:50%;position:absolute;left:200px;top:50px;box-shadow:0 4px 15px rgba(0,255,0,0.5); PHYSICS+true; VELOCITY+−2,1 EL>
-
-<BL CREATE div#ball3 @[#app] , [50x50] , STYLE+background:radial-gradient(circle at 30% 30%,#00aaff,#0088ff);border-radius:50%;position:absolute;left:300px;top:100px;box-shadow:0 4px 15px rgba(0,170,255,0.5); PHYSICS+true; VELOCITY+0,2 EL>
-
-<BL CREATE div#ball4 @[#app] , [50x50] , STYLE+background:radial-gradient(circle at 30% 30%,#ffff00,#ffcc00);border-radius:50%;position:absolute;left:150px;top:200px;box-shadow:0 4px 15px rgba(255,255,0,0.5); PHYSICS+true; VELOCITY+2,−1 EL>
-
-<BL CREATE div#ball5 @[#app] , [50x50] , STYLE+background:radial-gradient(circle at 30% 30%,#ff00ff,#cc00cc);border-radius:50%;position:absolute;left:400px;top:150px;box-shadow:0 4px 15px rgba(255,0,255,0.5); PHYSICS+true; VELOCITY+−3,0.5 EL>
-
-<EMK>`
-    };
-
-    // Load template helper
-    window.loadTemplate = function(name) {
-      if (templates[name]) {
-        editor.value = templates[name];
-        updateStatistics();
-        log(`✅ Template loaded: ${name}`, 'ok');
-        setTimeout(() => runProgram(editor.value), 300);
+      if (char === "\"" || char === "'") { quote = char; continue; }
+      if (char === "/" && line[i + 1] === "/" && (i === 0 || /\s/.test(line[i - 1]))) {
+        return line.slice(0, i);
       }
-    };
+    }
+    return line;
+  }).join("\n");
+}
 
-    function updateStatistics() {
-      const code = editor.value;
-      lineCount.textContent = code.split('\n').length;
-      charCount.textContent = code.length;
-      const matches = code.match(/<BL/g);
-      commandCount.textContent = matches ? matches.length : 0;
+function splitTopLevel(source, separators = ",;") {
+  const output = [];
+  let start = 0;
+  let quote = null;
+  let depth = 0;
+  let escaped = false;
+
+  for (let i = 0; i < source.length; i++) {
+    const char = source[i];
+    if (escaped) { escaped = false; continue; }
+    if (char === "\\") { escaped = true; continue; }
+    if (quote) {
+      if (char === quote) quote = null;
+      continue;
+    }
+    if (char === "\"" || char === "'") { quote = char; continue; }
+    if (char === "(" || char === "[" || char === "{") depth++;
+    else if (char === ")" || char === "]" || char === "}") depth = Math.max(0, depth - 1);
+    else if (depth === 0 && separators.includes(char)) {
+      const piece = source.slice(start, i).trim();
+      if (piece) output.push(piece);
+      start = i + 1;
+    }
+  }
+
+  const last = source.slice(start).trim();
+  if (last) output.push(last);
+  return output;
+}
+
+function normalizeLines(code) {
+  const source = stripComments(String(code).replace(/^\uFEFF/, ""));
+  const rawLines = source.split(/\r?\n/);
+  const output = [];
+  let buffer = "";
+  let depth = 0;
+  let quote = null;
+  let escaped = false;
+  let continued = false;
+
+  for (const rawLine of rawLines) {
+    const trimmed = rawLine.trim();
+    if (!trimmed && depth === 0 && !buffer) continue;
+    if (!buffer && (trimmed.toUpperCase() === "BMK" || trimmed.toUpperCase() === "EMK")) continue;
+
+    let line = trimmed;
+    const hasContinuation = /\\$/.test(line);
+    if (hasContinuation) line = line.slice(0, -1).trimEnd();
+
+    if (buffer) buffer += depth > 0 ? "\n" : " ";
+    buffer += line;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (escaped) { escaped = false; continue; }
+      if (char === "\\") { escaped = true; continue; }
+      if (quote) {
+        if (char === quote) quote = null;
+        continue;
+      }
+      if (char === "\"" || char === "'") { quote = char; continue; }
+      if (char === "{") depth++;
+      else if (char === "}") depth--;
+      if (depth < 0) throw new Error("Found a closing '}' without a matching '{'.");
     }
 
-    editor.addEventListener('input', updateStatistics);
+    continued = hasContinuation;
+    if (depth === 0 && !continued) {
+      if (buffer.trim()) output.push(buffer.trim());
+      buffer = "";
+      quote = null;
+      escaped = false;
+    }
+  }
 
-    function log(msg, level = 'info') {
-      const d = document.createElement('div');
-      d.textContent = msg;
-      d.className = `console-entry ${level}`;
-      consoleEl.appendChild(d);
-      consoleEl.scrollTop = consoleEl.scrollHeight;
+  if (buffer.trim()) output.push(buffer.trim());
+  return output;
+}
+
+function parseQuoted(value) {
+  const input = value.trim();
+  if (input.length < 2 || !((input[0] === '"' && input.at(-1) === '"') || (input[0] === "'" && input.at(-1) === "'"))) {
+    return input;
+  }
+
+  const quote = input[0];
+  const inner = input.slice(1, -1);
+  let result = "";
+  let escaped = false;
+  const escapeMap = { n: "\n", r: "\r", t: "\t", b: "\b", f: "\f" };
+
+  for (const char of inner) {
+    if (escaped) {
+      result += Object.prototype.hasOwnProperty.call(escapeMap, char) ? escapeMap[char] : char;
+      escaped = false;
+    } else if (char === "\\") {
+      escaped = true;
+    } else {
+      result += char;
+    }
+  }
+  if (escaped) result += "\\";
+  return result;
+}
+
+/* ---------- variables and interpolation ---------- */
+
+function getPathValue(path) {
+  const parts = String(path).split(".");
+  let value = runtime.vars[parts.shift()];
+  for (const part of parts) {
+    if (["__proto__", "prototype", "constructor"].includes(part)) return undefined;
+    if (value == null) return undefined;
+    value = value[part];
+  }
+  return value;
+}
+
+function readElementProperty(reference, property) {
+  const element = resolveElement(reference);
+  if (!element) return undefined;
+  const properties = {
+    value: "value",
+    text: "textContent",
+    textcontent: "textContent",
+    checked: "checked",
+    disabled: "disabled",
+    hidden: "hidden",
+    title: "title",
+    id: "id",
+    class: "className"
+  };
+  const key = properties[property.toLowerCase()];
+  return key ? element[key] : undefined;
+}
+
+function getValuePath(path) {
+  const value = String(path).trim();
+  const elementMatch = value.match(/^([#.][\w-]+)\.(value|text|textContent|checked|disabled|hidden|title|id|class)$/i);
+  if (elementMatch) return readElementProperty(elementMatch[1], elementMatch[2]);
+  return getPathValue(value);
+}
+
+function interpolate(value) {
+  return String(value).replace(/\{\{\s*([#.]?[a-zA-Z_$][\w$.-]*)\s*\}\}/g, (_match, path) => {
+    const result = getValuePath(path);
+    return result == null ? "" : String(result);
+  });
+}
+
+function resolveValue(raw) {
+  const value = String(raw ?? "").trim();
+  if (!value) return "";
+
+  const isQuoted = (value[0] === '"' && value.at(-1) === '"') || (value[0] === "'" && value.at(-1) === "'");
+  if (isQuoted) return interpolate(parseQuoted(value));
+  if (value === "true") return true;
+  if (value === "false") return false;
+  if (value === "null") return null;
+  if (value === "undefined") return undefined;
+  if (/^-?(?:\d+\.?\d*|\.\d+)$/.test(value)) return Number(value);
+  if (value.startsWith("expr(") && value.endsWith(")")) return evaluate(value.slice(5, -1));
+  if (value.startsWith("json(") && value.endsWith(")")) {
+    try { return JSON.parse(value.slice(5, -1)); }
+    catch (error) { throw new Error(`Invalid JSON value: ${error.message}`); }
+  }
+
+  if (/^([#.][\w-]+)\.(value|text|textContent|checked|disabled|hidden|title|id|class)$/i.test(value)) {
+    const result = getValuePath(value);
+    return result === undefined ? "" : result;
+  }
+  if (/^[a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]*)*$/.test(value)) {
+    const result = getPathValue(value);
+    if (result !== undefined) return result;
+  }
+  return interpolate(value);
+}
+
+/* ---------- safe expression parser (no eval / Function) ---------- */
+
+function tokenizeExpression(source) {
+  const tokens = [];
+  let i = 0;
+  const text = String(source);
+
+  while (i < text.length) {
+    if (/\s/.test(text[i])) { i++; continue; }
+
+    const rest = text.slice(i);
+    const number = rest.match(/^(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/);
+    if (number) {
+      tokens.push({ type: "number", value: Number(number[0]) });
+      i += number[0].length;
+      continue;
     }
 
-    clearBtn.addEventListener('click', () => {
-      consoleEl.innerHTML = '';
-      previewContent.innerHTML = '';
-      runtime.commandCount = 0;
-      runtime.errors = 0;
-      physicsEngine.stop();
-      physicsEngine.objects.clear();
-      log('Cleared all', 'ok');
-    });
+    if (text[i] === '"' || text[i] === "'") {
+      const quote = text[i];
+      let end = i + 1;
+      let escaped = false;
+      for (; end < text.length; end++) {
+        const char = text[end];
+        if (escaped) { escaped = false; continue; }
+        if (char === "\\") { escaped = true; continue; }
+        if (char === quote) break;
+      }
+      if (end >= text.length) throw new Error("Unclosed string in expression.");
+      tokens.push({ type: "string", value: parseQuoted(text.slice(i, end + 1)) });
+      i = end + 1;
+      continue;
+    }
 
-    formatBtn.addEventListener('click', () => {
+    const identifier = rest.match(/^[a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]*)*/);
+    if (identifier) {
+      const word = identifier[0];
+      if (word === "true") tokens.push({ type: "literal", value: true });
+      else if (word === "false") tokens.push({ type: "literal", value: false });
+      else if (word === "null") tokens.push({ type: "literal", value: null });
+      else if (word === "undefined") tokens.push({ type: "literal", value: undefined });
+      else tokens.push({ type: "identifier", value: word });
+      i += word.length;
+      continue;
+    }
+
+    const operator = rest.match(/^(===|!==|==|!=|<=|>=|&&|\|\||[()+\-*/%<>!])/);
+    if (operator) {
+      tokens.push({ type: "operator", value: operator[0] });
+      i += operator[0].length;
+      continue;
+    }
+
+    throw new Error(`Unexpected character '${text[i]}' in expression.`);
+  }
+
+  return tokens;
+}
+
+function evaluate(source) {
+  const tokens = tokenizeExpression(source);
+  let position = 0;
+  const peek = () => tokens[position];
+  const take = value => {
+    if (peek()?.value === value) { position++; return true; }
+    return false;
+  };
+  const expect = value => {
+    if (!take(value)) throw new Error(`Expected '${value}' in expression.`);
+  };
+
+  function primary() {
+    const token = peek();
+    if (!token) throw new Error("Incomplete expression.");
+    if (take("(")) {
+      const result = logicalOr();
+      expect(")");
+      return result;
+    }
+    position++;
+    if (token.type === "number" || token.type === "string" || token.type === "literal") return token.value;
+    if (token.type === "identifier") return getPathValue(token.value);
+    throw new Error(`Unexpected '${token.value}' in expression.`);
+  }
+
+  function unary() {
+    if (take("!")) return !unary();
+    if (take("-")) return -Number(unary());
+    if (take("+")) return Number(unary());
+    return primary();
+  }
+
+  function multiplicative() {
+    let value = unary();
+    while (["*", "/", "%"].includes(peek()?.value)) {
+      const operator = tokens[position++].value;
+      const right = unary();
+      if (operator === "*") value = Number(value) * Number(right);
+      else if (operator === "/") value = Number(value) / Number(right);
+      else value = Number(value) % Number(right);
+    }
+    return value;
+  }
+
+  function additive() {
+    let value = multiplicative();
+    while (["+", "-"].includes(peek()?.value)) {
+      const operator = tokens[position++].value;
+      const right = multiplicative();
+      if (operator === "+") value = typeof value === "string" || typeof right === "string" ? String(value ?? "") + String(right ?? "") : Number(value) + Number(right);
+      else value = Number(value) - Number(right);
+    }
+    return value;
+  }
+
+  function comparison() {
+    let value = additive();
+    while (["<", ">", "<=", ">="].includes(peek()?.value)) {
+      const operator = tokens[position++].value;
+      const right = additive();
+      if (operator === "<") value = value < right;
+      else if (operator === ">") value = value > right;
+      else if (operator === "<=") value = value <= right;
+      else value = value >= right;
+    }
+    return value;
+  }
+
+  function equality() {
+    let value = comparison();
+    while (["==", "===", "!=", "!=="].includes(peek()?.value)) {
+      const operator = tokens[position++].value;
+      const right = comparison();
+      if (operator === "==" || operator === "===") value = value === right || (operator === "==" && value == right); // intentional loose comparison for ==
+      else value = !(value === right || (operator === "!=" && value == right));
+    }
+    return value;
+  }
+
+  function logicalAnd() {
+    let value = equality();
+    while (take("&&")) {
+      const right = equality();
+      value = Boolean(value) && Boolean(right);
+    }
+    return value;
+  }
+
+  function logicalOr() {
+    let value = logicalAnd();
+    while (take("||")) {
+      const right = logicalAnd();
+      value = Boolean(value) || Boolean(right);
+    }
+    return value;
+  }
+
+  const result = logicalOr();
+  if (position !== tokens.length) throw new Error(`Unexpected '${tokens[position].value}' at end of expression.`);
+  return result;
+}
+
+/* ---------- selectors and element creation ---------- */
+
+function parseTarget(target) {
+  const name = String(target).trim();
+  if (name === "preview" || name === "root") return refs.preview;
+  if (name === "body") return document.body;
+  if (runtime.elements.has(name)) return runtime.elements.get(name);
+  try { return document.querySelector(name); }
+  catch { return null; }
+}
+
+function parseElementSpec(spec) {
+  const match = String(spec).trim().match(/^([a-zA-Z][\w-]*)(#[\w-]+)?((?:\.[\w-]+)*)$/);
+  if (!match) throw new Error(`Invalid element '${spec}'. Use a tag, optional #id, and optional .classes.`);
+  return {
+    tag: match[1],
+    id: match[2] ? match[2].slice(1) : "",
+    classes: match[3] ? match[3].split(".").filter(Boolean) : []
+  };
+}
+
+function extractBraced(source) {
+  const open = source.indexOf("{");
+  if (open < 0) return { head: source.trim(), body: "" };
+
+  let depth = 0;
+  let quote = null;
+  let escaped = false;
+  let close = -1;
+  for (let i = open; i < source.length; i++) {
+    const char = source[i];
+    if (escaped) { escaped = false; continue; }
+    if (char === "\\") { escaped = true; continue; }
+    if (quote) {
+      if (char === quote) quote = null;
+      continue;
+    }
+    if (char === '"' || char === "'") { quote = char; continue; }
+    if (char === "{") depth++;
+    else if (char === "}") {
+      depth--;
+      if (depth === 0) { close = i; break; }
+    }
+  }
+  if (close < 0) throw new Error("Unclosed '{...}' parameter block.");
+  if (source.slice(close + 1).trim()) throw new Error("Unexpected text after the closing '}' in create command.");
+  return { head: source.slice(0, open).trim(), body: source.slice(open + 1, close).trim() };
+}
+
+function parseCreate(line) {
+  const { head, body } = extractBraced(line);
+  const match = head.match(/^create\s+(\S+)(?:\s+(?:->|@)\s*(\S+))?(?:\s+\[([^\]]*)\])?\s*$/i);
+  if (!match) throw new Error("Use: create tag#id.class -> target [widthxheight] { ... }");
+  return {
+    spec: match[1],
+    target: match[2] || "preview",
+    size: match[3] || "",
+    params: parseParams(body)
+  };
+}
+
+function parseParams(body) {
+  if (!body) return {};
+  const output = Object.create(null);
+  for (const part of splitTopLevel(body, ",;\n")) {
+    const colon = part.indexOf(":");
+    if (colon < 0) {
+      output.text = resolveValue(part);
+      continue;
+    }
+    const key = part.slice(0, colon).trim().toLowerCase();
+    if (!/^[a-z][a-z0-9_-]*$/.test(key)) throw new Error(`Invalid parameter name '${key}'.`);
+    output[key] = resolveValue(part.slice(colon + 1).trim());
+  }
+  return output;
+}
+
+function applySize(element, size) {
+  if (!size) return;
+  const parts = size.split(/[x,]/).map(part => part.trim());
+  if (parts[0]) element.style.width = /^-?\d+(?:\.\d+)?$/.test(parts[0]) ? `${parts[0]}px` : parts[0];
+  if (parts[1]) element.style.height = /^-?\d+(?:\.\d+)?$/.test(parts[1]) ? `${parts[1]}px` : parts[1];
+}
+
+function applyStyle(element, value) {
+  const source = String(value ?? "");
+  for (const rule of splitTopLevel(source, ";")) {
+    const colon = rule.indexOf(":");
+    if (colon < 0) continue;
+    const originalProperty = rule.slice(0, colon).trim();
+    const propertyValue = interpolate(rule.slice(colon + 1).trim());
+    if (!originalProperty) continue;
+    if (originalProperty.startsWith("--")) element.style.setProperty(originalProperty, propertyValue);
+    else {
+      const property = originalProperty.replace(/-([a-z])/g, (_match, char) => char.toUpperCase());
+      element.style[property] = propertyValue;
+    }
+  }
+}
+
+function applyAttrs(element, value) {
+  for (const pair of splitTopLevel(String(value ?? ""), ";|,")) {
+    const equals = pair.indexOf("=");
+    if (equals < 0) {
+      const name = pair.trim();
+      if (name) element.setAttribute(name, "");
+      continue;
+    }
+    const name = pair.slice(0, equals).trim();
+    const rawValue = pair.slice(equals + 1).trim();
+    if (!/^[a-zA-Z_:][\w:.-]*$/.test(name)) throw new Error(`Invalid attribute name '${name}'.`);
+    const attrValue = interpolate(parseQuoted(rawValue));
+    element.setAttribute(name, attrValue);
+  }
+}
+
+function remember(element, key) {
+  if (key) runtime.elements.set(key, element);
+  if (element.id) runtime.elements.set(`#${element.id}`, element);
+}
+
+function createElement(line) {
+  const config = parseCreate(line);
+  const spec = parseElementSpec(config.spec);
+  const target = parseTarget(config.target);
+  if (!target) throw new Error(`Target '${config.target}' was not found.`);
+
+  const element = document.createElement(spec.tag);
+  if (spec.id) element.id = spec.id;
+  if (spec.classes.length) element.classList.add(...spec.classes);
+  applySize(element, config.size);
+
+  const params = config.params;
+  if (Object.prototype.hasOwnProperty.call(params, "text")) element.textContent = String(params.text ?? "");
+  if (Object.prototype.hasOwnProperty.call(params, "html")) element.innerHTML = String(params.html ?? "");
+  if (Object.prototype.hasOwnProperty.call(params, "style")) applyStyle(element, params.style);
+  if (Object.prototype.hasOwnProperty.call(params, "attr")) applyAttrs(element, params.attr);
+  if (Object.prototype.hasOwnProperty.call(params, "class")) {
+    const classes = String(params.class ?? "").split(/\s+/).filter(Boolean);
+    if (classes.length) element.classList.add(...classes);
+  }
+  if (Object.prototype.hasOwnProperty.call(params, "value") && "value" in element) element.value = String(params.value ?? "");
+  if (Object.prototype.hasOwnProperty.call(params, "placeholder")) element.setAttribute("placeholder", String(params.placeholder ?? ""));
+  if (Object.prototype.hasOwnProperty.call(params, "src")) element.setAttribute("src", String(params.src ?? ""));
+  if (params.hidden === true) element.hidden = true;
+
+  target.appendChild(element);
+  remember(element, spec.id ? `#${spec.id}` : config.spec);
+
+  if (params.onclick != null) bind(element, "click", String(params.onclick));
+  if (params.oninput != null) bind(element, "input", String(params.oninput));
+  if (params.onchange != null) bind(element, "change", String(params.onchange));
+  if (params.onkeydown != null) bind(element, "keydown", String(params.onkeydown));
+  if (params.event != null) {
+    const eventMatch = String(params.event).match(/^(\w+)\s*=>\s*(.*)$/s);
+    if (!eventMatch) throw new Error("event expects: eventName => MiniKode statements");
+    bind(element, eventMatch[1], eventMatch[2]);
+  }
+  if (Object.prototype.hasOwnProperty.call(params, "physics") && params.physics !== false) addPhysics(element, params);
+  return element;
+}
+
+function bind(element, eventName, code) {
+  const handler = event => {
+    try {
+      executeStatements(code, event, element);
+    } catch (error) {
+      runtime.errors++;
+      log(`Event error: ${error.message}`, "err");
+      stats();
+    }
+  };
+  element.addEventListener(eventName, handler);
+  runtime.cleanup.push(() => element.removeEventListener(eventName, handler));
+}
+
+function resolveElement(reference) {
+  const name = String(reference).trim();
+  if (name === "$event") return runtime.vars.$event?.target || null;
+  if (name === "$self") return runtime.vars.$self || null;
+  if (runtime.elements.has(name)) return runtime.elements.get(name);
+  return parseTarget(name);
+}
+
+function requireElement(reference) {
+  const element = resolveElement(reference);
+  if (!element) throw new Error(`Element '${reference}' was not found.`);
+  return element;
+}
+
+/* ---------- statements ---------- */
+
+function executeStatement(statement, event = null, self = null) {
+  const source = statement.trim();
+  if (!source) return;
+  let match;
+
+  if (/^create\s+/i.test(source)) {
+    createElement(source);
+    return;
+  }
+
+  if (/^let\s+/i.test(source)) {
+    match = source.match(/^let\s+([A-Za-z_$][\w$]*)\s*=\s*(.*)$/i);
+    if (!match) throw new Error("Use: let variableName = value");
+    runtime.vars[match[1]] = resolveValue(match[2]);
+    return;
+  }
+
+  if (/^set\s+/i.test(source)) {
+    match = source.match(/^set\s+(\S+)\s+(text|html|value|style|attr|class|prop)\s*(?:=|\s)\s*(.*)$/i);
+    if (!match) throw new Error("Use: set #id text \"Hello\"");
+    const element = requireElement(match[1]);
+    const kind = match[2].toLowerCase();
+    const raw = match[3];
+    if (kind === "prop") {
+      const equals = raw.indexOf("=");
+      if (equals < 1) throw new Error("prop expects: set #id prop propertyName=value");
+      const property = raw.slice(0, equals).trim();
+      if (["__proto__", "prototype", "constructor", "outerHTML", "innerHTML"].includes(property)) {
+        throw new Error(`Changing '${property}' through prop is not allowed.`);
+      }
+      element[property] = resolveValue(raw.slice(equals + 1));
+      return;
+    }
+    const value = resolveValue(raw);
+    if (kind === "text") element.textContent = String(value ?? "");
+    else if (kind === "html") element.innerHTML = String(value ?? "");
+    else if (kind === "value") element.value = value ?? "";
+    else if (kind === "style") applyStyle(element, value);
+    else if (kind === "attr") applyAttrs(element, value);
+    else if (kind === "class") element.className = String(value ?? "");
+    return;
+  }
+
+  if (/^show\s+/i.test(source)) { requireElement(source.replace(/^show\s+/i, "")).hidden = false; return; }
+  if (/^hide\s+/i.test(source)) { requireElement(source.replace(/^hide\s+/i, "")).hidden = true; return; }
+  if (/^toggle\s+/i.test(source)) {
+    const element = requireElement(source.replace(/^toggle\s+/i, ""));
+    element.hidden = !element.hidden;
+    return;
+  }
+  if (/^remove\s+/i.test(source)) { requireElement(source.replace(/^remove\s+/i, "")).remove(); return; }
+
+  if (/^addclass\s+/i.test(source) || /^delclass\s+/i.test(source)) {
+    match = source.match(/^(addclass|delclass)\s+(\S+)\s+(.+)$/i);
+    if (!match) throw new Error("Use: addclass #id className (or delclass)");
+    const element = requireElement(match[2]);
+    const classes = String(resolveValue(match[3])).split(/\s+/).filter(Boolean);
+    if (classes.length) {
+      if (match[1].toLowerCase() === "addclass") element.classList.add(...classes);
+      else element.classList.remove(...classes);
+    }
+    return;
+  }
+
+  if (/^log\s*/i.test(source)) { log(String(resolveValue(source.replace(/^log\s*/i, ""))), "info"); return; }
+  if (/^alert\s*/i.test(source)) { window.alert(String(resolveValue(source.replace(/^alert\s*/i, "")))); return; }
+
+  if (/^wait\s+/i.test(source)) {
+    match = source.match(/^wait\s+(\d+)\s*=>\s*(.*)$/is);
+    if (!match) throw new Error("Use: wait 300 => MiniKode statements");
+    const timer = setTimeout(() => {
+      try { executeStatements(match[2], event, self); }
+      catch (error) { runtime.errors++; log(`Delayed action error: ${error.message}`, "err"); stats(); }
+    }, Number(match[1]));
+    runtime.cleanup.push(() => clearTimeout(timer));
+    return;
+  }
+
+  if (/^emit\s+/i.test(source)) {
+    match = source.match(/^emit\s+(\S+)(?:\s+(.+))?$/is);
+    if (!match) throw new Error("Use: emit eventName [value]");
+    window.dispatchEvent(new CustomEvent(match[1], { detail: resolveValue(match[2] || "") }));
+    return;
+  }
+
+  if (/^focus\s+/i.test(source)) { requireElement(source.replace(/^focus\s+/i, "")).focus(); return; }
+
+  if (/^increment\s+/i.test(source) || /^decrement\s+/i.test(source)) {
+    match = source.match(/^(increment|decrement)\s+([A-Za-z_$][\w$]*)(?:\s+(.+))?$/i);
+    if (!match) throw new Error("Use: increment variableName [amount]");
+    const amount = match[3] ? Number(resolveValue(match[3])) : 1;
+    if (!Number.isFinite(amount)) throw new Error("The increment/decrement amount must be a number.");
+    const current = Number(runtime.vars[match[2]]) || 0;
+    runtime.vars[match[2]] = current + (match[1].toLowerCase() === "increment" ? amount : -amount);
+    return;
+  }
+
+  if (/^repeat\s+/i.test(source)) {
+    match = source.match(/^repeat\s+(\d+)\s*(?:=>)?\s*(.+)$/is);
+    if (!match) throw new Error("Use: repeat 5 => MiniKode command");
+    const count = Math.min(Number(match[1]), 1000);
+    const previousIndex = runtime.vars.$index;
+    for (let index = 0; index < count; index++) {
+      runtime.vars.$index = index;
+      executeStatements(match[2], event, self);
+    }
+    if (previousIndex === undefined) delete runtime.vars.$index;
+    else runtime.vars.$index = previousIndex;
+    return;
+  }
+
+  if (/^if\s+/i.test(source)) {
+    match = source.match(/^if\s+(.+?)\s*=>\s*(.*)$/is);
+    if (!match) throw new Error("Use: if expression => MiniKode command");
+    if (Boolean(evaluate(match[1]))) executeStatements(match[2], event, self);
+    return;
+  }
+
+  throw new Error(`Unknown statement '${source}'.`);
+}
+
+function executeStatements(code, event = null, self = null) {
+  runtime.vars.$event = event;
+  runtime.vars.$self = self;
+  for (const statement of splitTopLevel(String(code), ";")) {
+    executeStatement(statement, event, self);
+  }
+}
+
+/* ---------- top-level program parser ---------- */
+
+function runLine(line) {
+  if (/^create\s+/i.test(line)) { createElement(line); return; }
+
+  let match = line.match(/^on\s+(\S+)\s+(\w+)\s*=>\s*(.*)$/is);
+  if (match) {
+    const element = requireElement(match[1]);
+    bind(element, match[2], match[3]);
+    return;
+  }
+
+  if (/^let\s+/i.test(line) || /^set\s+/i.test(line) || /^repeat\s+/i.test(line) || /^if\s+/i.test(line)) {
+    executeStatement(line);
+    return;
+  }
+
+  if (/^(show|hide|toggle|remove|addclass|delclass|log|alert|wait|emit|focus|increment|decrement)\b/i.test(line)) {
+    executeStatement(line);
+    return;
+  }
+
+  throw new Error(`Unknown command '${line.split(/\s+/)[0] || line}'.`);
+}
+
+/* ---------- physics ---------- */
+
+const physics = {
+  gravity: 0.45,
+  friction: 0.995,
+  running: false,
+  loopId: 0,
+  add(element, parameters) {
+    const parent = element.offsetParent || element.parentElement || refs.preview;
+    const object = {
+      el: element,
+      parent,
+      x: element.offsetLeft,
+      y: element.offsetTop,
+      vx: Number(parameters.vx) || 0,
+      vy: Number(parameters.vy) || 0,
+      bounce: Number(parameters.bounce ?? 0.75),
+      friction: Number(parameters.friction ?? this.friction),
+      gravity: Number(parameters.gravity ?? this.gravity),
+      static: Boolean(parameters.static)
+    };
+    runtime.physics.set(element, object);
+    this.start();
+  },
+  start() {
+    if (this.running) return;
+    this.running = true;
+    let previousTime = 0;
+    const tick = time => {
+      if (!this.running) return;
+      const delta = previousTime ? Math.min((time - previousTime) / 16.67, 2.5) : 1;
+      previousTime = time;
+
+      for (const object of runtime.physics.values()) {
+        if (object.static || !object.el.isConnected || !object.parent.isConnected) continue;
+        object.vy += object.gravity * delta;
+        object.vx *= Math.pow(object.friction, delta);
+        object.vy *= Math.pow(object.friction, delta);
+        object.x += object.vx * delta;
+        object.y += object.vy * delta;
+
+        const width = object.el.offsetWidth || 1;
+        const height = object.el.offsetHeight || 1;
+        const boundsWidth = object.parent.clientWidth || refs.preview.clientWidth;
+        const boundsHeight = object.parent.clientHeight || refs.preview.clientHeight;
+
+        if (object.x < 0) { object.x = 0; object.vx = Math.abs(object.vx) * object.bounce; }
+        if (object.x + width > boundsWidth) { object.x = Math.max(0, boundsWidth - width); object.vx = -Math.abs(object.vx) * object.bounce; }
+        if (object.y < 0) { object.y = 0; object.vy = Math.abs(object.vy) * object.bounce; }
+        if (object.y + height > boundsHeight) { object.y = Math.max(0, boundsHeight - height); object.vy = -Math.abs(object.vy) * object.bounce; }
+
+        object.el.style.left = `${object.x}px`;
+        object.el.style.top = `${object.y}px`;
+      }
+      this.loopId = requestAnimationFrame(tick);
+    };
+    this.loopId = requestAnimationFrame(tick);
+  },
+  stop() {
+    this.running = false;
+    if (this.loopId) cancelAnimationFrame(this.loopId);
+    this.loopId = 0;
+  }
+};
+
+function addPhysics(element, parameters) {
+  if (parameters.velocity != null) {
+    const velocity = String(parameters.velocity).split(/[\s,]+/).filter(Boolean).map(Number);
+    if (velocity.length > 2 || velocity.some(value => !Number.isFinite(value))) {
+      throw new Error("velocity expects two numbers, such as: velocity: \"3,-1\"");
+    }
+    parameters.vx = velocity[0] || 0;
+    parameters.vy = velocity[1] || 0;
+  }
+  element.style.position = "absolute";
+  physics.add(element, parameters);
+}
+
+/* ---------- formatter ---------- */
+
+function formatCode(code) {
+  const lines = normalizeLines(code);
+  if (!lines.length) return "BMK\nEMK";
+  const output = ["BMK"];
+  for (const line of lines) {
+    if (/^create\s+/i.test(line)) {
+      const { head, body } = extractBraced(line);
+      if (body) {
+        const pieces = splitTopLevel(body, ",;\n");
+        output.push(`  ${head} { ${pieces.join("; ")} }`);
+      } else output.push(`  ${line}`);
+    } else {
+      output.push(`  ${line}`);
+    }
+  }
+  output.push("EMK");
+  return output.join("\n");
+}
+
+/* ---------- example programs ---------- */
+
+const templates = {
+  hello: `BMK
+let title = "MiniKode 2.1"
+create div#app -> preview [100%x100%] {
+  style: "display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:linear-gradient(135deg,#182848,#4b6cb7);font-family:system-ui"
+}
+create h1#title -> #app {
+  text: "{{title}}"
+  style: "margin:0;color:white;font-size:44px;text-align:center"
+}
+create p#sub -> #app {
+  text: "A smaller syntax. A bigger runtime."
+  style: "margin:0;color:#d7e5ff;text-align:center"
+}
+EMK`,
+
+  counter: `BMK
+let count = 0
+create div#app -> preview [100%x100%] {
+  style: "display:flex;align-items:center;justify-content:center;background:#101828;font-family:system-ui"
+}
+create div#card -> #app {
+  style: "background:white;padding:36px;border-radius:20px;min-width:320px;text-align:center;box-shadow:0 20px 60px #0004"
+}
+create h1#title -> #card { text: "Counter"; style: "margin:0 0 12px;color:#222" }
+create div#display -> #card { text: "{{count}}"; style: "font-size:72px;font-weight:800;margin:16px;color:#7950f2" }
+create div#row -> #card { style: "display:flex;gap:8px;justify-content:center" }
+create button#dec -> #row { text: "−"; style: "font-size:24px;padding:10px 18px" }
+create button#reset -> #row { text: "Reset"; style: "padding:10px 18px" }
+create button#inc -> #row { text: "+"; style: "font-size:24px;padding:10px 18px" }
+on #dec click => decrement count; set #display text "{{count}}"
+on #inc click => increment count; set #display text "{{count}}"
+on #reset click => let count = 0; set #display text "{{count}}"
+EMK`,
+
+  todo: `BMK
+create div#app -> preview [100%x100%] {
+  style: "padding:28px;background:#f8f9fa;font-family:system-ui;overflow:auto;color:#202124"
+}
+create div#box -> #app {
+  style: "max-width:620px;margin:0 auto;background:white;padding:24px;border-radius:16px;box-shadow:0 8px 35px #0001"
+}
+create h1#title -> #box { text: "Todo List"; style: "margin:0 0 14px;color:#202124" }
+create p#help -> #box { text: "Type a task and press Add. Your tasks will appear below."; style: "color:#666;font-size:14px" }
+create input#task -> #box { attr: "placeholder=Add a task;type=text"; style: "width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:15px" }
+create button#add -> #box { text: "Add task"; style: "margin-top:10px;padding:10px 16px;background:#315bd6;color:white;border:0;border-radius:8px" }
+create ul#list -> #box { style: "display:flex;flex-direction:column;gap:8px;margin:14px 0 0;padding-left:22px" }
+on #add click => let task = #task.value; if task != "" => create li.task -> #list { text: "{{task}}"; style: "padding:10px 12px;background:#f1f3f5;border-radius:8px;color:#222" }; set #task value ""; focus #task
+EMK`,
+
+  cards: `BMK
+create div#app -> preview [100%x100%] {
+  style: "padding:24px;background:#0b1020;color:white;font-family:system-ui;overflow:auto"
+}
+create h1#title -> #app { text: "MiniKode Cards"; style: "margin:0 0 20px" }
+create div#grid -> #app {
+  style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px"
+}
+repeat 6 => create div.card -> #grid { text: "Card {{ $index }}"; style: "padding:28px;border-radius:14px;background:#15213a;border:1px solid #263b60;text-align:center" }
+EMK`,
+
+  physics: `BMK
+create div#world -> preview [100%x100%] {
+  style: "position:relative;overflow:hidden;background:linear-gradient(#102040,#09101f)"
+}
+create div#ball1 -> #world [50x50] {
+  style: "left:80px;top:50px;background:#ff6b6b;border-radius:50%"
+  physics: true; velocity: "3,-1"; bounce: .82
+}
+create div#ball2 -> #world [40x40] {
+  style: "left:220px;top:120px;background:#4dabf7;border-radius:50%"
+  physics: true; velocity: "-2,0"; bounce: .9
+}
+create div#ball3 -> #world [30x30] {
+  style: "left:340px;top:30px;background:#69db7c;border-radius:50%"
+  physics: true; velocity: "1,2"; bounce: .76
+}
+EMK`
+};
+
+function loadTemplate(name, autoRun = true) {
+  refs.editor.value = templates[name] || templates.hello;
+  stats();
+  if (autoRun) run();
+}
+
+/* ---------- run / save / load ---------- */
+
+function getProgramBody(source) {
+  const lines = String(source).replace(/^\uFEFF/, "").split(/\r?\n/);
+  let first = 0;
+  let last = lines.length - 1;
+  while (first <= last && !lines[first].trim()) first++;
+  while (last >= first && !lines[last].trim()) last--;
+  if (first > last || lines[first].trim().toUpperCase() !== "BMK") {
+    throw new Error("Program must start with BMK on its own line.");
+  }
+  if (lines[last].trim().toUpperCase() !== "EMK") {
+    throw new Error("Program must end with EMK on its own line.");
+  }
+  return lines.slice(first + 1, last).join("\n");
+}
+
+function run() {
+  refs.console.replaceChildren();
+  runtime.errors = 0;
+  runtime.commands = 0;
+  runtime.running = true;
+  clearRuntime();
+
+  try {
+    const body = getProgramBody(refs.editor.value);
+    const lines = normalizeLines(body);
+    if (!lines.length) throw new Error("Program is empty.");
+
+    for (let index = 0; index < lines.length; index++) {
       try {
-        const formatted = editor.value
-          .split('\n')
-          .map(line => line.trim())
-          .filter(line => line.length > 0)
-          .join('\n');
-        editor.value = formatted;
-        updateStatistics();
-        log('Code formatted', 'ok');
-      } catch (e) {
-        log(`Format error: ${e.message}`, 'err');
-      }
-    });
-
-    // Parser helpers (same)
-    function parseShorthand(word) {
-      let tag = 'div', id = null, classes = [];
-      let buf = '', state = 'tag';
-      for (let c of word) {
-        if (c === '#') {
-          if (state === 'tag' && buf) tag = buf;
-          buf = '';
-          state = 'id';
-          continue;
-        }
-        if (c === '.') {
-          if (state === 'tag' && buf) tag = buf;
-          if (state === 'id' && buf) id = buf;
-          if (state === 'class' && buf) classes.push(buf);
-          buf = '';
-          state = 'class';
-          continue;
-        }
-        buf += c;
-      }
-      if (buf) {
-        if (state === 'tag') tag = buf;
-        else if (state === 'id') id = buf;
-        else if (state === 'class') classes.push(buf);
-      }
-      return { tag, id, classes };
-    }
-
-    function extractProgram(text) {
-      const start = text.indexOf('<BMK>');
-      const end = text.indexOf('<EMK>');
-      if (start === -1 || end === -1 || end <= start) return null;
-      return text.slice(start + 5, end).trim();
-    }
-
-    function extractBlocks(program) {
-      const blocks = [];
-      const re = /<BL\s+([\s\S]*?)\s+EL>/g;
-      let m;
-      while ((m = re.exec(program)) !== null) {
-        blocks.push(m[1].trim());
-      }
-      return blocks;
-    }
-
-    function parseBlockText(s) {
-      const re = /^\s*([^\s]+)\s+([^\s@,]+)\s*(?:@\s*\[([^\]]*)\])?\s*(?:,\s*\[([^\]]*)\])?\s*(?:,\s*(.*))?$/s;
-      const m = s.match(re);
-      if (!m) {
-        const parts = s.split(/\s+/);
-        return {
-          action: parts[0] || '',
-          thing: parts[1] || '',
-          position: null,
-          size: null,
-          paramsRaw: ''
-        };
-      }
-      return {
-        action: m[1].trim(),
-        thing: m[2].trim(),
-        position: m[3] ? m[3].trim() : null,
-        size: m[4] ? m[4].trim() : null,
-        paramsRaw: m[5] ? m[5].trim() : ''
-      };
-    }
-
-    // Improved param parser (keeps STYLE blocks containing colons/semicolons together)
-    function parseParams(paramsRaw) {
-      if (!paramsRaw) return [];
-      const out = [];
-      let i = 0;
-
-      while (i < paramsRaw.length) {
-        // find next KEY+
-        let keyEnd = paramsRaw.indexOf('+', i);
-        if (keyEnd === -1) break;
-
-        let key = paramsRaw.slice(i, keyEnd).trim();
-        let value = '';
-        let j = keyEnd + 1;
-
-        // collect value until we find a comma/semicolon that likely starts NEXT KEY+
-        while (j < paramsRaw.length) {
-          const c = paramsRaw[j];
-          if (c === ',' || c === ';') {
-            // lookahead: is the following token a KEY+ ?
-            const remaining = paramsRaw.slice(j + 1).trim();
-            const nextPlus = remaining.indexOf('+');
-            if (nextPlus !== -1) {
-              const textBeforePlus = remaining.slice(0, nextPlus).trim();
-              // heuristics: if textBeforePlus is short and looks like an uppercase KEY (no ':'), then it's a key, so break
-              if (/^[A-Z0-9_-]{1,20}$/.test(textBeforePlus)) {
-                break;
-              }
-            }
-          }
-          value += c;
-          j++;
-        }
-
-        out.push({ k: key.toUpperCase(), v: value.trim() });
-
-        // skip separators
-        while (j < paramsRaw.length && (paramsRaw[j] === ',' || paramsRaw[j] === ';' || paramsRaw[j] === ' ')) {
-          j++;
-        }
-        i = j;
-      }
-
-      // If parser missed tokens like "display:block" (no +), attempt to recover:
-      // split by separators and find plain colon tokens and attach to last STYLE or treat as STYLE
-      try {
-        const parts = paramsRaw.split(/[,;]\s*/).map(p => p.trim()).filter(Boolean);
-        for (let p of parts) {
-          if (p.indexOf('+') === -1 && p.indexOf(':') !== -1) {
-            // check if already present in out
-            const exists = out.some(o => o.v.includes(p) || o.k === p.toUpperCase());
-            if (!exists) {
-              // attach to last STYLE if exists
-              const lastStyle = out.slice().reverse().find(o => o.k === 'STYLE');
-              if (lastStyle) {
-                lastStyle.v = (lastStyle.v ? lastStyle.v + ';' : '') + p;
-              } else {
-                out.push({ k: 'STYLE', v: p });
-              }
-            }
-          } else if (p.indexOf('+') === -1 && p.indexOf('=') !== -1) {
-            // e.g., src=https... => ATTR
-            const lastAttr = out.slice().reverse().find(o => o.k === 'ATTR');
-            if (lastAttr) {
-              lastAttr.v = (lastAttr.v ? lastAttr.v + ';' : '') + p;
-            } else {
-              out.push({ k: 'ATTR', v: p });
-            }
-          }
-        }
-      } catch (e) { /* noop */ }
-
-      return out;
-    }
-
-    function applyStyleFromString(el, cssString) {
-      if (!cssString) return;
-      const rules = cssString.split(';').map(s => s.trim()).filter(Boolean);
-      for (let r of rules) {
-        const idx = r.indexOf(':');
-        if (idx === -1) continue;
-        const prop = r.slice(0, idx).trim();
-        const val = r.slice(idx + 1).trim();
-        try {
-          const jsProp = prop.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-          el.style[jsProp] = val;
-        } catch (e) {
-          console.warn('Style error:', e);
-        }
+        runLine(lines[index]);
+        runtime.commands++;
+      } catch (error) {
+        runtime.errors++;
+        log(`Command ${index + 1}: ${error.message}`, "err");
       }
     }
 
-    function applyAttrFromString(el, attrString) {
-      if (!attrString) return;
-      const pairs = attrString.split(/[;|]/).map(s => s.trim()).filter(Boolean);
-      for (let p of pairs) {
-        const eq = p.indexOf('=');
-        if (eq === -1) {
-          el.setAttribute(p, '');
-          continue;
-        }
-        const key = p.slice(0, eq).trim();
-        const val = p.slice(eq + 1).trim();
-        el.setAttribute(key, val);
-      }
-    }
+    log(`Build finished — ${runtime.commands} command(s), ${runtime.errors} error(s).`, runtime.errors ? "warn" : "ok");
+  } catch (error) {
+    runtime.errors++;
+    log(`Build failed: ${error.message}`, "err");
+  }
+  stats();
+}
 
-    // Ensure elements are visible: display not none and have at least fallback size if nothing set
-    function ensureVisible(el, parsed) {
-      // ensure parent preview has position relative and some min height
-      previewContent.style.position = previewContent.style.position || 'relative';
-      if (previewContent.clientHeight < 50) previewContent.style.minHeight = '200px';
+function save() {
+  try {
+    localStorage.setItem("minikode.project", refs.editor.value);
+    log("Project saved in this browser.", "ok");
+  } catch (error) {
+    log(`Could not save the project: ${error.message}`, "err");
+  }
+}
 
-      // if display none
-      const cs = getComputedStyle(el);
-      if (cs.display === 'none') {
-        el.style.display = 'block';
-        log(`(fix) display set to block for ${el.tagName.toLowerCase()}${el.id?('#'+el.id):''}`, 'info');
-      }
+function load() {
+  try {
+    const code = localStorage.getItem("minikode.project");
+    if (code == null) { log("No saved project found in this browser.", "warn"); return; }
+    refs.editor.value = code;
+    stats();
+    log("Project loaded.", "ok");
+  } catch (error) {
+    log(`Could not load the project: ${error.message}`, "err");
+  }
+}
 
-      // if width/height are zero, try to set sensible defaults:
-      // - if size parameter provided, that should have been applied already.
-      // - otherwise, use min-size (50x50 for div-like elements, or 24px for text-like)
-      const w = el.offsetWidth;
-      const h = el.offsetHeight;
-      const tag = el.tagName.toLowerCase();
+/* ---------- interface ---------- */
 
-      if ((w === 0 || h === 0) && !el.hasAttribute('data-no-default-size')) {
-        // avoid overriding images that will load; detect img
-        if (tag === 'img') {
-          // set a visible placeholder size if none
-          if (w === 0) el.style.minWidth = '80px';
-          if (h === 0) el.style.minHeight = '50px';
-        } else if (tag === 'input' || tag === 'textarea') {
-          if (w === 0) el.style.minWidth = '120px';
-          if (h === 0) el.style.minHeight = '28px';
-        } else {
-          if (w === 0) el.style.minWidth = '50px';
-          if (h === 0) el.style.minHeight = '50px';
-        }
-        log(`(fix) applied fallback size to ${el.tagName.toLowerCase()}${el.id?('#'+el.id):''}`, 'info');
-      }
+$("#runBtn").addEventListener("click", run);
+$("#refreshBtn").addEventListener("click", run);
+$("#formatBtn").addEventListener("click", () => {
+  try {
+    refs.editor.value = formatCode(refs.editor.value);
+    stats();
+    log("Formatted MiniKode.", "ok");
+  } catch (error) {
+    runtime.errors++;
+    stats();
+    log(`Format error: ${error.message}`, "err");
+  }
+});
+$("#saveBtn").addEventListener("click", save);
+$("#loadBtn").addEventListener("click", load);
+$("#clearBtn").addEventListener("click", () => {
+  refs.editor.value = "";
+  clearRuntime();
+  refs.console.replaceChildren();
+  runtime.errors = 0;
+  runtime.commands = 0;
+  runtime.running = false;
+  stats();
+});
+$("#consoleClear").addEventListener("click", () => refs.console.replaceChildren());
+document.querySelectorAll("[data-template]").forEach(button => {
+  button.addEventListener("click", () => loadTemplate(button.dataset.template));
+});
 
-      // ensure element is not hidden by zero opacity
-      if (cs.opacity === '0') el.style.opacity = '1';
-    }
+refs.editor.addEventListener("input", stats);
+refs.editor.addEventListener("keydown", event => {
+  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+    event.preventDefault();
+    run();
+  }
+  if (event.key === "Tab") {
+    event.preventDefault();
+    const start = event.target.selectionStart;
+    const end = event.target.selectionEnd;
+    event.target.setRangeText("  ", start, end, "end");
+  }
+});
 
-    // core: create element and handle params
-    function runBlock(parsed) {
-      const { action, thing, position, size, paramsRaw } = parsed;
-      const params = parseParams(paramsRaw);
-      const shorthand = parseShorthand(thing);
-      const el = document.createElement(shorthand.tag || 'div');
+refs.hint.innerHTML = `
+  <b>Program</b><br>
+  <code>BMK ... EMK</code> program wrapper<br>
+  <code>let score = 0</code> create a variable<br>
+  <code>create div#box.card -> preview [300x200] { ... }</code> make an element<br>
+  <code>on #button click => increment score</code> listen for an event<br>
+  <code>set #id text "Hello"</code> change an element<br>
+  <code>show / hide / toggle / remove #id</code> control an element<br>
+  <code>repeat 5 => create div.item -> #grid { ... }</code> repeat a command<br>
+  <code>if score &gt; 10 =&gt; log "Great!"</code> check a condition<br>
+  <code>physics: true; velocity: "3,-1"; bounce: .8</code> add simple physics<br><br>
+  <b>Values</b><br>
+  <code>{{score}}</code> inserts a variable · <code>#input.value</code> reads an input<br><br>
+  <b>Shortcuts</b><br>
+  Ctrl+Enter = Run · Tab = indent
+`;
 
-      if (shorthand.id) el.id = shorthand.id;
-      if (shorthand.classes && shorthand.classes.length) el.className = shorthand.classes.join(' ');
+loadTemplate("hello", false);
+run();
 
-      let appendTo = previewContent;
-
-      // position param handling
-      if (position) {
-        if (/^[#.]/.test(position.trim())) {
-          const parent = document.querySelector(position.trim());
-          if (parent) appendTo = parent;
-        } else if (/^\d+\s*[,x]\s*\d+/.test(position)) {
-          const parts = position.split(/[ ,x]/).map(s => s.trim()).filter(Boolean);
-          el.style.position = 'absolute';
-          el.style.left = (isNaN(+parts[0]) ? parts[0] : (parts[0] + 'px'));
-          el.style.top = (isNaN(+parts[1]) ? parts[1] : (parts[1] + 'px'));
-          previewContent.style.position = 'relative';
-        } else {
-          // treat as style string
-          applyStyleFromString(el, position);
-        }
-      }
-
-      // size param handling
-      if (size) {
-        if (/x/.test(size) || /,/.test(size)) {
-          const parts = size.split(/[x,]/).map(s => s.trim());
-          if (parts[0]) el.style.width = parts[0].replace(/\s+/g, '');
-          if (parts[1]) el.style.height = parts[1].replace(/\s+/g, '');
-        } else if (size.includes(':') || size.includes(';')) {
-          applyStyleFromString(el, size);
-        } else if (size.match(/^\d+$/)) {
-          el.style.width = size + 'px';
-        }
-      }
-
-      // handle params
-      for (let p of params) {
-        const k = p.k;
-        const v = p.v;
-
-        if (k === 'TEXT') {
-          el.textContent = v;
-        } else if (k === 'HTML') {
-          el.innerHTML = v;
-        } else if (k === 'STYLE') {
-          applyStyleFromString(el, v);
-        } else if (k === 'ATTR') {
-          applyAttrFromString(el, v);
-        } else if (k === 'CLASS') {
-          el.classList.add(...v.split(/\s+/).filter(Boolean));
-        } else if (k === 'ID') {
-          el.id = v;
-        } else if (k === 'APPEND') {
-          const parent = document.querySelector(v);
-          if (parent) appendTo = parent;
-        } else if (k === 'ONCLICK') {
-          el.addEventListener('click', () => handleMiniKodeClick(v, el));
-        } else if (k === 'ONEVENT') {
-          const i = v.indexOf(':');
-          if (i > -1) {
-            const ev = v.slice(0, i).trim();
-            const code = v.slice(i + 1);
-            el.addEventListener(ev, () => handleMiniKodeEvent(code, el));
-          }
-        } else if (k === 'DATA') {
-          const pairs = v.split(/[;|]/).map(x => x.trim()).filter(Boolean);
-          for (let pr of pairs) {
-            const eq = pr.indexOf('=');
-            if (eq > -1) {
-              el.dataset[pr.slice(0, eq)] = pr.slice(eq + 1);
-            }
-          }
-        } else if (k === 'PHYSICS') {
-          // schedule registration after append, see below
-          // store marker on element to act on later
-          if (v.toLowerCase() === 'true' || v === '') {
-            el.dataset._minikode_physics = 'true';
-          }
-        } else if (k === 'VELOCITY') {
-          el.dataset._minikode_velocity = v;
-        } else if (k === 'GRAVITY') {
-          physicsEngine.gravity = parseFloat(v) || physicsEngine.gravity;
-          log(`✓ Gravity set to ${physicsEngine.gravity}`, 'ok');
-        } else if (k === 'FRICTION') {
-          el.dataset._minikode_friction = v;
-        } else if (k === 'BOUNCE') {
-          el.dataset._minikode_bounce = v;
-        } else {
-          // Try to be forgiving: if unknown token contains ":" treat as style
-          if ((k && k.includes(':')) || (v && v.includes(':'))) {
-            const fragment = (k.includes(':') && !v) ? k : v;
-            applyStyleFromString(el, fragment);
-            log(`(recover) applied fragment as STYLE: ${fragment}`, 'info');
-          } else if ((k && k.includes('=')) || (v && v.includes('='))) {
-            const fragment = (k.includes('=') && !v) ? k : v;
-            applyAttrFromString(el, fragment);
-            log(`(recover) applied fragment as ATTR: ${fragment}`, 'info');
-          } else {
-            // unknown param: log but do not stop execution
-            log(`Unknown param ${k}${v?('='+v):''}`, 'info');
-          }
-        }
-      }
-
-      // Append element
-      appendTo.appendChild(el);
-
-      // AFTER append: ensure visible & register physics on next frame
-      requestAnimationFrame(() => {
-        try {
-          ensureVisible(el, parsed);
-
-          // if element was marked for physics, register now so offsetWidth/offsetHeight are correct
-          if (el.dataset._minikode_physics === 'true') {
-            // gather config
-            const cfg = {};
-            if (el.dataset._minikode_friction) cfg.friction = parseFloat(el.dataset._minikode_friction);
-            if (el.dataset._minikode_bounce) cfg.bounce = parseFloat(el.dataset._minikode_bounce);
-            physicsEngine.addObject(el, cfg);
-            physicsEngine.start();
-            log(`✓ Physics enabled for #${el.id || thing}`, 'ok');
-
-            // apply velocity if present
-            if (el.dataset._minikode_velocity) {
-              const parts = el.dataset._minikode_velocity.split(/[,x]/).map(s => parseFloat(s.trim()));
-              if (parts.length === 2) physicsEngine.applyVelocity(el, parts[0], parts[1]);
-            }
-          }
-        } catch (err) {
-          log('Post-create fix error: ' + (err.message || err), 'err');
-        }
-      });
-
-      runtime.elements.set(el.id || thing, el);
-      return el;
-    }
-
-    // event handlers (same as before)
-    function handleMiniKodeClick(action, el) {
-      if (action === 'incrementCounter()') {
-        const display = document.getElementById('display');
-        let count = parseInt(display.textContent) || 0;
-        count++;
-        display.textContent = count;
-        display.style.transform = 'scale(1.1)';
-        setTimeout(() => display.style.transform = 'scale(1)', 150);
-        log(`Counter incremented to ${count}`, 'info');
-      } else if (action === 'decrementCounter()') {
-        const display = document.getElementById('display');
-        let count = parseInt(display.textContent) || 0;
-        count--;
-        display.textContent = count;
-        display.style.transform = 'scale(1.1)';
-        setTimeout(() => display.style.transform = 'scale(1)', 150);
-        log(`Counter decremented to ${count}`, 'info');
-      } else if (action === 'resetCounter()') {
-        document.getElementById('display').textContent = '0';
-        log('Counter reset', 'info');
-      } else if (action === 'addTodoItem()') {
-        const input = document.getElementById('task-input');
-        if (input && input.value.trim()) {
-          const li = document.createElement('div');
-          li.style.cssText = 'display: flex; align-items: center; gap: 10px; padding: 12px; background: #fafafa; border-radius: 8px; border-left: 4px solid #667eea;';
-          li.innerHTML = `
-            <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;" />
-            <span style="flex: 1; color: #333; font-size: 13px;">${input.value}</span>
-            <button onclick="this.parentElement.remove()" style="padding: 4px 10px; background: #ff6b6b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Delete</button>
-          `;
-          document.getElementById('tasks-list').appendChild(li);
-          document.getElementById('empty-state').style.display = 'none';
-          log(`Task added`, 'info');
-          input.value = '';
-        }
-      } else if (action === 'submitForm()') {
-        const name = document.getElementById('name')?.value;
-        const email = document.getElementById('email')?.value;
-        const message = document.getElementById('message')?.value;
-
-        const status = document.getElementById('form-status');
-        if (name && email && message) {
-          status.style.display = 'block';
-          status.style.background = '#e0ffe0';
-          status.style.color = '#51cf66';
-          status.textContent = '✅ Message sent successfully!';
-          log('Form submitted successfully', 'ok');
-        } else {
-          status.style.display = 'block';
-          status.style.background = '#ffe0e0';
-          status.style.color = '#ff6b6b';
-          status.textContent = '❌ Please fill all fields';
-          log('Form validation failed', 'err');
-        }
-      } else if (action === 'resetPhysics()') {
-        physicsEngine.stop();
-        physicsEngine.objects.clear();
-        previewContent.innerHTML = '';
-        log('Physics simulation reset', 'ok');
-        setTimeout(() => runProgram(editor.value), 300);
-      } else {
-        log(`Unhandled click action: ${action}`, 'info');
-      }
-    }
-
-    function handleMiniKodeEvent(code, el) {
-      log(`Event triggered: ${code}`, 'info');
-    }
-
-    window.resetPhysics = function() {
-      physicsEngine.stop();
-      physicsEngine.objects.clear();
-      previewContent.innerHTML = '';
-      log('Physics simulation reset', 'ok');
-      setTimeout(() => runProgram(editor.value), 300);
-    };
-
-    // run program
-    function runProgram(text) {
-      consoleEl.innerHTML = '';
-      log('🚀 Starting MiniKode execution...', 'info');
-
-      const program = extractProgram(text);
-      if (!program) {
-        log('❌ No <BMK> ... <EMK> block found', 'err');
-        return;
-      }
-
-      const blocks = extractBlocks(program);
-      if (!blocks.length) {
-        log('❌ No <BL ... EL> blocks found', 'err');
-        return;
-      }
-
-      log(`📋 Found ${blocks.length} command(s)`, 'info');
-      previewContent.innerHTML = '';
-      physicsEngine.objects.clear();
-      physicsEngine.isRunning = false;
-      runtime.commandCount = 0;
-
-      for (let i = 0; i < blocks.length; i++) {
-        const btxt = blocks[i];
-        try {
-          const parsed = parseBlockText(btxt);
-          log(`#${i + 1}: ${parsed.action} ${parsed.thing}`, 'info');
-          const created = runBlock(parsed);
-          runtime.commandCount++;
-          if (created && created.id) {
-            log(`✓ Created element #${created.id}`, 'ok');
-          }
-        } catch (e) {
-          log(`Block ${i + 1} error: ${e.message || e}`, 'err');
-          runtime.errors++;
-        }
-      }
-
-      log(`✅ Execution complete! ${runtime.commandCount} commands executed`, 'ok');
-      updateStatistics();
-    }
-
-    runBtn.addEventListener('click', () => runProgram(editor.value));
-
-    editor.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault();
-        runProgram(editor.value);
-      }
-    });
-
-    // hints
-    function initializeHints() {
-      hintBox.innerHTML = `
-        <strong>📚 Pure MiniKode v3.0 Syntax (fixed):</strong><br><br>
-        <strong>Structure:</strong><br>
-        <code>&lt;BMK&gt; ... &lt;EMK&gt;</code> = Program<br>
-        <code>&lt;BL ACTION ELEMENT @[pos] , [size] , PARAMS EL&gt;</code> = Command<br><br>
-        
-        <strong>Common Actions:</strong><br>
-        CREATE, TEXT, STYLE, ATTR, CLASS, HTML, ONCLICK, DATA, PHYSICS, VELOCITY<br><br>
-        
-        <strong>Notes:</strong><br>
-        - If stray fragments like <code>display:block</code> appear, the engine recovers and applies them as STYLE.<br>
-        - Elements with no size get sensible fallbacks so you can see them.<br>
-        - Physics objects are registered after layout so balls show up reliably.
-      `;
-    }
-
-    initializeHints();
-    updateStatistics();
-
-    // load default
-    setTimeout(() => {
-      loadTemplate('counter');
-    }, 300);
-  </script>
+</script>
 </body>
 </html>
