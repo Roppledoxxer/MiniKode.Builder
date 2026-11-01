@@ -1,1 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07101f">
+  <meta name="description" content="The official MiniKode.Builder tutorial and reference guide. Learn the MiniKode 2.1 syntax, commands, events, expressions, and physics basics.">
+  <title>MiniKode.Builder — Tutorial & Help</title>
+  <link rel="stylesheet" href="tutorial.css">
+  <script src="tutorial.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="MiniKode documentation home">
+      <span class="brand-mark">MK</span>
+      <span class="brand-copy">
+        <strong>MiniKode<span class="brand-dot">.</span>Builder</strong>
+        <small>DOCUMENTATION / VERSION 2.1</small>
+      </span>
+    </a>
 
+    <nav class="top-nav" aria-label="Main navigation">
+      <a href="#about">About</a>
+      <a href="#basics">Basics to MiniKode's Builder</a>
+      <a href="#fundamentals">Fundamentals</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero page-width" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> THE MINIKODE 2.1 FIELD GUIDE</div>
+        <h1 id="page-title">Learn the language.<br><span>Build something.</span></h1>
+        <p class="hero-description">A practical guide to MiniKode.Builder: what MiniKode is, how its code is written, and what each command can do.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#basics">Start learning <span aria-hidden="true">→</span></a>
+          <a class="button button-secondary" href="#fundamentals">Browse the rules</a>
+        </div>
+      </div>
+      <div class="hero-code" aria-label="Example MiniKode program">
+        <div class="code-window-top">
+          <div class="window-dots"><i></i><i></i><i></i></div>
+          <span>hello.mkd</span>
+          <span class="code-version">MINIKODE 2.1</span>
+        </div>
+        <pre><code><span class="code-purple">BMK</span>
+<span class="code-blue">let</span> title = <span class="code-green">"Hello, world!"</span>
+
+<span class="code-blue">create</span> div#app -&gt; preview {
+  text: <span class="code-green">"{{title}}"</span>
+  style: <span class="code-green">"padding: 24px; color: #63e6be"</span>
+}
+<span class="code-purple">EMK</span></code></pre>
+        <div class="code-window-bottom"><span class="status-live"></span> A small program, ready to run</div>
+      </div>
+      <div class="hero-orb hero-orb-one"></div>
+      <div class="hero-orb hero-orb-two"></div>
+    </section>
+
+    <section class="quick-strip page-width" aria-label="What this guide covers">
+      <div><strong>01</strong><span>Understand the Builder</span></div>
+      <div><strong>02</strong><span>Learn the syntax</span></div>
+      <div><strong>03</strong><span>Use the commands</span></div>
+      <div><strong>04</strong><span>Make interactive projects</span></div>
+    </section>
+
+    <section id="about" class="doc-section page-width">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">01 / ABOUT</span>
+          <h2>What is MiniKode?</h2>
+        </div>
+        <p>Get to know the language and the tool before writing your first program.</p>
+      </div>
+
+      <div class="about-grid">
+        <article class="feature-card about-main-card">
+          <div class="card-icon icon-mint">&lt;/&gt;</div>
+          <h3>A smaller way to build</h3>
+          <p><strong>MiniKode</strong> is a small, custom language interpreted by MiniKode.Builder in your browser. You write short commands to create page elements, style them, change their content, and add interactions.</p>
+          <p>MiniKode is not HTML, CSS, or JavaScript. The Builder reads MiniKode code and uses browser features to create the result in the Preview panel.</p>
+        </article>
+        <article class="feature-card">
+          <div class="card-icon icon-blue">▣</div>
+          <h3>What the Builder does</h3>
+          <p>The Builder gives you an editor, a live preview, a console for messages and errors, quick templates, and tools to format, save, load, and run your program.</p>
+        </article>
+        <article class="feature-card">
+          <div class="card-icon icon-violet">⌘</div>
+          <h3>What you can make</h3>
+          <p>Build simple interfaces, counters, task lists, cards, interactive controls, and basic physics demonstrations. The language is designed for small browser projects and learning.</p>
+        </article>
+      </div>
+
+      <div class="note-card note-info">
+        <span class="note-symbol">i</span>
+        <p><strong>Important:</strong> MiniKode does not run arbitrary JavaScript. Its commands and expression rules are limited to the features described on this page. Use HTML/CSS-style values inside the supported parameters when you need to control how an element looks.</p>
+      </div>
+
+      <div class="workflow-grid">
+        <div class="workflow-step"><span>01</span><h4>Write</h4><p>Type a MiniKode program in the Editor.</p></div>
+        <div class="workflow-step"><span>02</span><h4>Run</h4><p>Press <kbd>Run</kbd> or use <kbd>Ctrl</kbd> + <kbd>Enter</kbd>.</p></div>
+        <div class="workflow-step"><span>03</span><h4>Inspect</h4><p>Look at Preview and read the Console for errors.</p></div>
+        <div class="workflow-step"><span>04</span><h4>Improve</h4><p>Edit your code, run it again, then save your project.</p></div>
+      </div>
+    </section>
+
+    <section id="basics" class="doc-section section-alt">
+      <div class="page-width">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">02 / THE STARTING POINT</span>
+            <h2>Basics to MiniKode's Builder</h2>
+          </div>
+          <p>Learn the shape of a program, create elements, and give them content and style.</p>
+        </div>
+
+        <article class="lesson-block">
+          <div class="lesson-copy">
+            <span class="lesson-number">LESSON 01</span>
+            <h3>Every program needs a beginning and an ending</h3>
+            <p>A MiniKode program starts with <code>BMK</code> and ends with <code>EMK</code>. Put your MiniKode commands between these two lines. Write each marker on its own line.</p>
+            <ul class="clean-list">
+              <li><code>BMK</code> means the program begins.</li>
+              <li><code>EMK</code> means the program ends.</li>
+              <li>Blank lines are allowed between commands.</li>
+              <li>Lines beginning with <code>//</code> are comments and are ignored.</li>
+            </ul>
+          </div>
+          <div class="code-card">
+            <div class="code-card-head"><span>YOUR FIRST PROGRAM</span><button class="copy-button" data-copy="first-program">Copy code</button></div>
+            <pre><code id="first-program">BMK
+// My first MiniKode program
+let message = "Hello, MiniKode!"
+log message
+EMK</code></pre>
+          </div>
+        </article>
+
+        <article class="lesson-block lesson-reverse">
+          <div class="lesson-copy">
+            <span class="lesson-number">LESSON 02</span>
+            <h3>Create an element</h3>
+            <p>The <code>create</code> command makes an HTML element and places it inside a target. You can give the element an ID, one or more classes, a size, and parameters.</p>
+            <div class="syntax-line"><code>create tag#id.class -&gt; target [widthxheight] { ... }</code></div>
+            <p>The target can be <code>preview</code>, <code>root</code>, <code>body</code>, a CSS selector such as <code>#app</code>, or an element that MiniKode has already created. The target is optional; if it is left out, the element goes into <code>preview</code>.</p>
+          </div>
+          <div class="code-card">
+            <div class="code-card-head"><span>CREATE A BOX AND A TITLE</span><button class="copy-button" data-copy="create-example">Copy code</button></div>
+            <pre><code id="create-example">BMK
+create div#app.panel -&gt; preview [100%x100%] {
+  style: "padding: 24px; background: #101828"
+}
+create h1#heading -&gt; #app {
+  text: "Welcome!"
+  style: "color: #63e6be; font-size: 32px"
+}
+EMK</code></pre>
+          </div>
+        </article>
+
+        <div class="syntax-breakdown">
+          <h3>How to read the create line</h3>
+          <div class="syntax-parts">
+            <div><code class="part-tag">create</code><p>The command that creates an element.</p></div>
+            <div><code class="part-tag">div</code><p>The HTML tag to create.</p></div>
+            <div><code class="part-tag">#app</code><p>An optional ID. Use it later to find the element.</p></div>
+            <div><code class="part-tag">.panel</code><p>An optional CSS class. More classes can be added with more dots.</p></div>
+            <div><code class="part-tag">-&gt; preview</code><p>The parent element that receives the new element. <code>@</code> also works as an older target separator.</p></div>
+            <div><code class="part-tag">[100%x100%]</code><p>Optional width and height. Plain numbers become pixels; units such as <code>%</code> are kept.</p></div>
+            <div><code class="part-tag">{ ... }</code><p>The parameter block: content, style, attributes, and other settings.</p></div>
+          </div>
+        </div>
+
+        <article class="lesson-block">
+          <div class="lesson-copy">
+            <span class="lesson-number">LESSON 03</span>
+            <h3>Give elements content and style</h3>
+            <p>Inside the braces, write a parameter name, a colon, and its value. You can put multiple parameters on separate lines or separate them with semicolons or commas. Put text values in quotes.</p>
+            <p>The <code>style</code> parameter uses regular CSS declarations. Separate each CSS rule with a semicolon.</p>
+          </div>
+          <div class="code-card">
+            <div class="code-card-head"><span>PARAMETER EXAMPLE</span><button class="copy-button" data-copy="parameter-example">Copy code</button></div>
+            <pre><code id="parameter-example">BMK
+create button#save.primary -&gt; preview {
+  text: "Save project"
+  attr: "type=button;title=Save your work"
+  style: "padding: 12px 18px; background: #123b33; color: white; border: 0; border-radius: 8px"
+}
+EMK</code></pre>
+          </div>
+        </article>
+
+        <div class="reference-table-wrap">
+          <h3>Supported create parameters</h3>
+          <p class="table-intro">These are the built-in parameter names understood by the MiniKode 2.1 runtime.</p>
+          <div class="table-scroll">
+            <table class="reference-table">
+              <thead><tr><th>Parameter</th><th>What it does</th><th>Example</th></tr></thead>
+              <tbody>
+                <tr><td><code>text</code></td><td>Sets plain text content.</td><td><code>text: "Hello"</code></td></tr>
+                <tr><td><code>html</code></td><td>Sets HTML content. Only use HTML you trust.</td><td><code>html: "&lt;b&gt;Hi&lt;/b&gt;"</code></td></tr>
+                <tr><td><code>style</code></td><td>Applies CSS styles.</td><td><code>style: "color: red; padding: 8px"</code></td></tr>
+                <tr><td><code>attr</code></td><td>Adds HTML attributes, written as name=value pairs.</td><td><code>attr: "type=text;placeholder=Name"</code></td></tr>
+                <tr><td><code>class</code></td><td>Adds extra CSS classes to the element.</td><td><code>class: "wide highlighted"</code></td></tr>
+                <tr><td><code>value</code></td><td>Sets the value of an element that has a value property.</td><td><code>value: "Sample"</code></td></tr>
+                <tr><td><code>placeholder</code></td><td>Sets the placeholder attribute.</td><td><code>placeholder: "Type here"</code></td></tr>
+                <tr><td><code>src</code></td><td>Sets the source attribute, often used by images.</td><td><code>src: "image.png"</code></td></tr>
+                <tr><td><code>hidden</code></td><td>Hides the element when set to <code>true</code>.</td><td><code>hidden: true</code></td></tr>
+                <tr><td><code>onclick</code>, <code>oninput</code>, <code>onchange</code>, <code>onkeydown</code></td><td>Runs MiniKode statements when that event happens.</td><td><code>onclick: "log 'Clicked'"</code></td></tr>
+                <tr><td><code>event</code></td><td>Sets an event name and action using <code>eventName =&gt; statements</code>.</td><td><code>event: "click =&gt; log 'Hi'"</code></td></tr>
+                <tr><td><code>physics</code></td><td>Turns on the basic physics behavior.</td><td><code>physics: true</code></td></tr>
+                <tr><td><code>velocity</code>, <code>bounce</code>, <code>friction</code>, <code>gravity</code>, <code>static</code></td><td>Changes the physics motion.</td><td><code>velocity: "3,-1"; bounce: .8</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="rules-panel">
+          <div class="rules-panel-heading">
+            <span class="section-kicker">MINIKODE SYNTAX RULES</span>
+            <h3>Small rules that prevent big errors</h3>
+          </div>
+          <div class="rules-grid">
+            <div><strong>One top-level command per line</strong><p>Write separate program commands on separate lines. Semicolons are used to separate multiple statements inside event, condition, and repeat actions.</p></div>
+            <div><strong>Use quotes for text</strong><p>Write text in single or double quotes. Numbers and values such as <code>true</code>, <code>false</code>, <code>null</code>, and <code>undefined</code> can be written without quotes.</p></div>
+            <div><strong>Keep IDs consistent</strong><p>Create <code>div#panel</code>, then refer to it as <code>#panel</code>. The element must exist before a command tries to use it.</p></div>
+            <div><strong>Close every create block</strong><p>Every opening <code>{</code> in a create command needs a matching <code>}</code>. Create blocks can span multiple lines.</p></div>
+            <div><strong>Separate CSS rules</strong><p>Inside a quoted <code>style</code> value, use <code>property: value; property: value</code>. CSS property names can use kebab-case.</p></div>
+            <div><strong>Separate parameters clearly</strong><p>Parameter entries can be placed on new lines or separated with commas or semicolons. Keep values containing punctuation inside quotes.</p></div>
+            <div><strong>Comments are ignored</strong><p>A line beginning with <code>//</code> is a comment. You can use comments to explain what a section of code does.</p></div>
+            <div><strong>Continue a long line</strong><p>A backslash <code>\</code> at the end of a line joins the next line to it. Usually, multiline create blocks are easier to read.</p></div>
+          </div>
+        </div>
+
+        <article class="lesson-block lesson-reverse">
+          <div class="lesson-copy">
+            <span class="lesson-number">LESSON 04</span>
+            <h3>Use variables and show their values</h3>
+            <p>A variable stores a value so you can use it again. Create one with <code>let</code>. Put its name inside double curly braces to insert its value into text or another quoted value.</p>
+            <p>You can also read a common element property directly, such as <code>#task.value</code>, or use it in interpolation as <code>{{#task.value}}</code>.</p>
+          </div>
+          <div class="code-card">
+            <div class="code-card-head"><span>VARIABLES AND VALUES</span><button class="copy-button" data-copy="variable-example">Copy code</button></div>
+            <pre><code id="variable-example">BMK
+let player = "Roppledoxxer"
+let score = 25
+create h2#label -&gt; preview {
+  text: "Player: {{player}}"
+}
+create p#points -&gt; preview {
+  text: "Score: {{score}}"
+}
+EMK</code></pre>
+          </div>
+        </article>
+
+        <div class="note-card note-warn">
+          <span class="note-symbol">!</span>
+          <p><strong>Remember:</strong> A variable is not automatically a live display. When its value changes, use a <code>set</code> command to update the element that shows it, as in the Counter example below.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="fundamentals" class="doc-section page-width">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">03 / THE RULEBOOK</span>
+          <h2>Fundamentals</h2>
+        </div>
+        <p>The commands, expressions, event rules, and physics settings available in MiniKode 2.1.</p>
+      </div>
+
+      <div class="fundamentals-toolbar">
+        <label for="guide-search">Find a command or rule</label>
+        <div class="search-wrap"><span aria-hidden="true">⌕</span><input id="guide-search" type="search" placeholder="Try: increment, events, style..." autocomplete="off"><kbd> / </kbd></div>
+        <span id="search-count" class="search-count" aria-live="polite">Showing all topics</span>
+      </div>
+      <p id="no-results" class="no-results" hidden>No matching topics. Try another word.</p>
+
+      <div class="fundamental-grid" id="fundamental-grid">
+        <article class="reference-card guide-item" data-keywords="let variable declaration value number string boolean null undefined json expr">
+          <div class="reference-card-head"><span class="reference-tag">VARIABLES</span><code>let</code></div>
+          <h3>Store information</h3>
+          <p>Make a variable with a name and a value. The value may be a quoted string, number, boolean, null, or another variable's value.</p>
+          <pre><code>let name = "Alex"
+let score = 0
+let isReady = true</code></pre>
+          <p class="micro-note">Variable names can use letters, numbers, <code>_</code>, and <code>$</code>, but must not start with a number.</p>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="create element tag id class selector target size width height preview root body">
+          <div class="reference-card-head"><span class="reference-tag">ELEMENTS</span><code>create</code></div>
+          <h3>Build a page element</h3>
+          <p>Use a tag name, optional ID and classes, optional target, optional size, and a parameter block.</p>
+          <pre><code>create div#card.box -> preview [320x180] {
+  text: "My card"
+}</code></pre>
+          <p class="micro-note">Target separator <code>-&gt;</code> is recommended. <code>@</code> is also accepted. Without a target, MiniKode uses <code>preview</code>.</p>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="set text html value style attr class prop update change element">
+          <div class="reference-card-head"><span class="reference-tag">UPDATE</span><code>set</code></div>
+          <h3>Change an element</h3>
+          <p>Update text, HTML, value, style, attributes, or classes after the element exists.</p>
+          <pre><code>set #title text "New title"
+set #input value "Hello"
+set #card style "padding: 20px"</code></pre>
+          <p class="micro-note">Use <code>set #thing prop propertyName=value</code> for an allowed element property. Properties such as <code>innerHTML</code> and <code>outerHTML</code> are blocked through <code>prop</code>.</p>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="show hide toggle remove visibility element">
+          <div class="reference-card-head"><span class="reference-tag">VISIBILITY</span><code>show / hide</code></div>
+          <h3>Control visibility</h3>
+          <p>Show an element, hide it, switch its hidden state, or remove it from the page.</p>
+          <pre><code>hide #help
+show #help
+toggle #menu
+remove #old-card</code></pre>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="addclass delclass class css classlist">
+          <div class="reference-card-head"><span class="reference-tag">CLASSES</span><code>addclass</code></div>
+          <h3>Change CSS classes</h3>
+          <p>Add or remove one or more classes without replacing the element's other classes.</p>
+          <pre><code>addclass #card selected
+delclass #card selected</code></pre>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="event on click input change keydown onclick oninput onchange onkeydown handler">
+          <div class="reference-card-head"><span class="reference-tag">INTERACTION</span><code>on</code></div>
+          <h3>Listen for an event</h3>
+          <p>Attach MiniKode statements to an element event. The action runs when that event occurs.</p>
+          <pre><code>on #button click => log "Clicked!"
+on #name input => log #name.value</code></pre>
+          <p class="micro-note">Common event names include <code>click</code>, <code>input</code>, <code>change</code>, and <code>keydown</code>. The runtime can bind other browser event names too.</p>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="increment decrement counter amount variable">
+          <div class="reference-card-head"><span class="reference-tag">MATH</span><code>increment</code></div>
+          <h3>Change a number</h3>
+          <p>Add or subtract 1 by default, or give a different amount.</p>
+          <pre><code>increment score
+increment score 5
+decrement lives
+decrement lives 2</code></pre>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="repeat loop index $index create cards count">
+          <div class="reference-card-head"><span class="reference-tag">LOOPS</span><code>repeat</code></div>
+          <h3>Repeat a command</h3>
+          <p>Run a command a chosen number of times. Inside the repeated command, <code>$index</code> starts at 0 and increases by 1.</p>
+          <pre><code>repeat 4 => create div.tile -> #grid {
+  text: "Tile {{ $index }}"
+}</code></pre>
+          <p class="micro-note">The repeat count is a whole number. The runtime limits one repeat command to 1,000 iterations.</p>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="if condition expression comparison true false logic">
+          <div class="reference-card-head"><span class="reference-tag">CONDITIONS</span><code>if</code></div>
+          <h3>Run code only when true</h3>
+          <p>The command after <code>=&gt;</code> runs only when the expression before it is true.</p>
+          <pre><code>if score >= 10 => log "Level up!"
+if lives == 0 => show #game-over</code></pre>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="log alert console message popup wait timeout delay emit custom event focus">
+          <div class="reference-card-head"><span class="reference-tag">UTILITY</span><code>log / alert</code></div>
+          <h3>Send messages and actions</h3>
+          <p>Use these commands to print a message, show a popup, delay an action, send a custom event, or focus an element.</p>
+          <pre><code>log "Saved!"
+alert "Are you sure?"
+wait 500 => log "Half a second later"
+emit game-start "level-1"
+focus #name</code></pre>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="interpolation curly braces variable text property element value text checked disabled hidden title id class">
+          <div class="reference-card-head"><span class="reference-tag">VALUES</span><code>{{ }}</code></div>
+          <h3>Insert a value into text</h3>
+          <p>Use double curly braces to insert a variable, a dotted variable path, or a supported element property.</p>
+          <pre><code>text: "Score: {{score}}"
+text: "Typed: {{#name.value}}"
+let points = 12
+log "Points: {{points}}"</code></pre>
+          <p class="micro-note">Supported readable element properties include <code>value</code>, <code>text</code>, <code>checked</code>, <code>disabled</code>, <code>hidden</code>, <code>title</code>, <code>id</code>, and <code>class</code>.</p>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="expression arithmetic operators plus minus multiply divide modulo comparison equality logical and or not parentheses">
+          <div class="reference-card-head"><span class="reference-tag">EXPRESSIONS</span><code>expr(...)</code></div>
+          <h3>Use MiniKode math and logic</h3>
+          <p>Expressions are supported by <code>if</code> and by values written as <code>expr(...)</code>. MiniKode supports these operators:</p>
+          <div class="operator-list">
+            <span><code>+ -</code> Add / subtract</span>
+            <span><code>* / %</code> Multiply / divide / remainder</span>
+            <span><code>&lt; &gt; &lt;= &gt;=</code> Compare</span>
+            <span><code>== != === !==</code> Check equality</span>
+            <span><code>&amp;&amp; || !</code> AND / OR / NOT</span>
+            <span><code>( )</code> Group expressions</span>
+          </div>
+          <pre><code>let total = expr(5 * (2 + 3))
+if total == 25 => log "Correct"</code></pre>
+          <p class="micro-note">This is a limited expression language, not full JavaScript. Function calls, loops written as JavaScript, and arbitrary JavaScript code are not supported.</p>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="json object array value json() parser">
+          <div class="reference-card-head"><span class="reference-tag">DATA</span><code>json(...)</code></div>
+          <h3>Read JSON values</h3>
+          <p>Use <code>json(...)</code> when you need to parse a JSON value into a variable.</p>
+          <pre><code>let settings = json({"theme":"dark","volume":5})</code></pre>
+          <p class="micro-note">The contents must be valid JSON. JSON keys and text values need double quotes.</p>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="physics velocity bounce friction gravity static motion collision animation">
+          <div class="reference-card-head"><span class="reference-tag">PHYSICS</span><code>physics</code></div>
+          <h3>Give an element motion</h3>
+          <p>Turn on simple motion for an element. Set a starting position in CSS and provide a velocity as horizontal and vertical numbers.</p>
+          <pre><code>create div#ball -> #world [40x40] {
+  style: "position: absolute; left: 40px; top: 30px; background: #4dabf7; border-radius: 50%"
+  physics: true
+  velocity: "3,-1"
+  bounce: .8
+  friction: .995
+  gravity: .45
+}</code></pre>
+          <p class="micro-note"><code>velocity</code> is written as <code>"x,y"</code>. You can also set <code>vx</code> and <code>vy</code>. <code>static: true</code> skips movement. Physics objects bounce within their parent container.</p>
+        </article>
+
+        <article class="reference-card guide-item" data-keywords="save load local storage browser project format keyboard shortcut ctrl enter tab">
+          <div class="reference-card-head"><span class="reference-tag">BUILDER TOOLS</span><code>Save / Load</code></div>
+          <h3>Use the Builder tools</h3>
+          <p>The toolbar actions belong to MiniKode.Builder itself, not the MiniKode language.</p>
+          <ul class="tool-list">
+            <li><strong>Run / Refresh</strong><span>Build the program in Preview.</span></li>
+            <li><strong>Format</strong><span>Rearrange the program into a consistent layout.</span></li>
+            <li><strong>Save / Load</strong><span>Store or restore the project in this browser.</span></li>
+            <li><strong>Clear</strong><span>Empty the editor and clear the current preview.</span></li>
+            <li><strong>Ctrl + Enter</strong><span>Run the current program.</span></li>
+            <li><strong>Tab</strong><span>Insert two spaces in the editor.</span></li>
+          </ul>
+          <p class="micro-note">Save and Load use this browser's local storage. They do not automatically upload your project to a website or another device.</p>
+        </article>
+      </div>
+
+      <section class="full-example" aria-labelledby="full-example-title">
+        <div class="full-example-copy">
+          <span class="lesson-number">PUT IT TOGETHER</span>
+          <h3 id="full-example-title">A complete working counter</h3>
+          <p>This example creates a display and three buttons. Each button listens for a click, changes the <code>count</code> variable, and updates the display with <code>set</code>.</p>
+          <p>Paste it into the Builder Editor and press Run.</p>
+        </div>
+        <div class="code-card large-code-card">
+          <div class="code-card-head"><span>COUNTER.MKD</span><button class="copy-button" data-copy="complete-counter">Copy full example</button></div>
+          <pre><code id="complete-counter">BMK
+let count = 0
+
+create div#app -&gt; preview [100%x100%] {
+  style: "display: flex; align-items: center; justify-content: center; background: #101828; font-family: system-ui"
+}
+create div#card -&gt; #app {
+  style: "background: white; color: #222; padding: 32px; border-radius: 18px; text-align: center; min-width: 280px"
+}
+create h1#heading -&gt; #card {
+  text: "MiniKode Counter"
+}
+create h2#display -&gt; #card {
+  text: "{{count}}"
+  style: "font-size: 64px; margin: 16px"
+}
+create div#buttons -&gt; #card {
+  style: "display: flex; gap: 8px; justify-content: center"
+}
+create button#minus -&gt; #buttons { text: "-" }
+create button#reset -&gt; #buttons { text: "Reset" }
+create button#plus -&gt; #buttons { text: "+" }
+
+on #minus click => decrement count; set #display text "{{count}}"
+on #reset click => let count = 0; set #display text "{{count}}"
+on #plus click => increment count; set #display text "{{count}}"
+EMK</code></pre>
+        </div>
+      </section>
+
+      <div class="troubleshooting">
+        <div class="section-heading compact-heading">
+          <div><span class="section-kicker">WHEN SOMETHING GOES WRONG</span><h2>Quick troubleshooting</h2></div>
+          <p>Most beginner errors come from a missing marker, a misspelled ID, or a value that is not written in the right format.</p>
+        </div>
+        <div class="trouble-list">
+          <details class="trouble-item"><summary>“Program must start with BMK”</summary><p>Put <code>BMK</code> by itself on the first non-empty line. Do not put another command on the same line.</p></details>
+          <details class="trouble-item"><summary>“Program must end with EMK”</summary><p>Put <code>EMK</code> by itself on the last non-empty line.</p></details>
+          <details class="trouble-item"><summary>“Target was not found” or “Element was not found”</summary><p>Check that the parent or ID exists before trying to place an element inside it or change it. IDs are written with <code>#</code>, for example <code>#app</code>.</p></details>
+          <details class="trouble-item"><summary>“Unknown command”</summary><p>Check spelling and make sure you are using a MiniKode command supported by the runtime. MiniKode commands are not JavaScript statements.</p></details>
+          <details class="trouble-item"><summary>My variable changed, but the screen did not</summary><p>Update the element that displays it. For example: <code>increment count; set #display text "{{count}}"</code>.</p></details>
+          <details class="trouble-item"><summary>My style is not applying</summary><p>Write CSS inside a quoted <code>style</code> value, use a colon between each CSS property and value, and separate CSS rules with semicolons.</p></details>
+          <details class="trouble-item"><summary>My click event does nothing</summary><p>Make sure the target element was created before the <code>on</code> line, the ID matches exactly, and the action after <code>=&gt;</code> is valid MiniKode.</p></details>
+          <details class="trouble-item"><summary>My physics object does not move as expected</summary><p>Give it a size, a starting <code>left</code> and <code>top</code> style, and a two-number <code>velocity</code>. Make sure its parent has a visible size and acts as the object's container.</p></details>
+        </div>
+      </div>
+
+      <div class="end-note">
+        <div class="end-note-mark">MK</div>
+        <div><strong>That's the foundation.</strong><p>Start with a small program, run it often, and use the Console to understand any errors. Add one new command at a time.</p></div>
+        <a href="#top" class="back-top">Back to top ↑</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner page-width">
+      <div class="footer-brand"><span class="brand-mark">MK</span><div><strong>MiniKode.Builder</strong><small>Build small. Think big.</small></div></div>
+      <p>© 2026 Roppledoxxer. All rights reserved.</p>
+      <a href="#top">Return to top ↑</a>
+    </div>
+  </footer>
+</body>
+</html>
